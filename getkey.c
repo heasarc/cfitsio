@@ -3385,12 +3385,12 @@ int ffgttb(fitsfile *fptr,      /* I - FITS file pointer*/
     if (ffgtknjj(fptr, 4, "NAXIS1", rowlen, status) == BAD_ORDER) /* 4th key */
         return(*status = NO_NAXES);  /* keyword not NAXIS1 */
     else if (*status == NOT_POS_INT)
-        return(*status == BAD_NAXES); /* bad NAXIS1 value */
+        return(*status = BAD_NAXES); /* bad NAXIS1 value */
 
     if (ffgtknjj(fptr, 5, "NAXIS2", nrows, status) == BAD_ORDER) /* 5th key */
         return(*status = NO_NAXES);  /* keyword not NAXIS2 */
     else if (*status == NOT_POS_INT)
-        return(*status == BAD_NAXES); /* bad NAXIS2 value */
+        return(*status = BAD_NAXES); /* bad NAXIS2 value */
 
     if (ffgtknjj(fptr, 6, "PCOUNT", pcount, status) == BAD_ORDER) /* 6th key */
         return(*status = NO_PCOUNT);  /* keyword not PCOUNT */
@@ -3405,7 +3405,7 @@ int ffgttb(fitsfile *fptr,      /* I - FITS file pointer*/
     if (ffgtkn(fptr, 8, "TFIELDS", tfields, status) == BAD_ORDER) /* 8th key*/
         return(*status = NO_TFIELDS);  /* keyword not TFIELDS */
     else if (*status == NOT_POS_INT || *tfields > 999)
-        return(*status == BAD_TFIELDS); /* bad TFIELDS value */
+        return(*status = BAD_TFIELDS); /* bad TFIELDS value */
 
 
     if (*status > 0)
