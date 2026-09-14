@@ -961,19 +961,40 @@ int	ngp_read_xtension(fitsfile *ff, int parent_hn, int simple_mode)
 
    if (NGP_OK != (r = ngp_hdu_init(&ngph))) return(r);
 
-   if (NGP_OK != (r = ngp_read_line(0))) return(r);	/* EOF always means error here */
+				/* every error exit below must release the tokens read so far */
+   if (NGP_OK != (r = ngp_read_line(0)))	/* EOF always means error here */
+     {
+       ngp_hdu_clear(&ngph);
+       return(r);
+     }
    switch (NGP_XTENSION_SIMPLE & simple_mode)
      {
-       case 0:  if (NGP_TOKEN_XTENSION != ngp_keyidx) return(NGP_TOKEN_NOT_EXPECT);
+       case 0:  if (NGP_TOKEN_XTENSION != ngp_keyidx)
+		  {
+		    ngp_hdu_clear(&ngph);
+		    return(NGP_TOKEN_NOT_EXPECT);
+		  }
 		break;
-       default:	if (NGP_TOKEN_SIMPLE != ngp_keyidx) return(NGP_TOKEN_NOT_EXPECT);
+       default:	if (NGP_TOKEN_SIMPLE != ngp_keyidx)
+		  {
+		    ngp_hdu_clear(&ngph);
+		    return(NGP_TOKEN_NOT_EXPECT);
+		  }
 		break;
      }
-       	
-   if (NGP_OK != (r = ngp_hdu_insert_token(&ngph, &ngp_linkey))) return(r);
+
+   if (NGP_OK != (r = ngp_hdu_insert_token(&ngph, &ngp_linkey)))
+     {
+       ngp_hdu_clear(&ngph);
+       return(r);
+     }
 
    for (;;)
-    { if (NGP_OK != (r = ngp_read_line(0))) return(r);	/* EOF always means error here */
+    { if (NGP_OK != (r = ngp_read_line(0)))	/* EOF always means error here */
+        {
+          ngp_hdu_clear(&ngph);
+          return(r);
+        }
       exflg = 0;
       switch (ngp_keyidx)
        { 
@@ -1101,7 +1122,11 @@ int	ngp_read_xtension(fitsfile *ff, int parent_hn, int simple_mode)
            fits_movabs_hdu(ff, parent_hn, &tmp0, &r);	/* link us to parent */
            fits_add_group_member(ff, NULL, my_hn, &r);
            fits_movabs_hdu(ff, my_hn, &tmp0, &r);
-           if (NGP_OK != r) return(r);
+           if (NGP_OK != r)
+             {
+               ngp_hdu_clear(&ngph);
+               return(r);
+             }
          }
      }
 
