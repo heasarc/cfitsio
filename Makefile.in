@@ -1257,7 +1257,8 @@ CLEANFILES = tg123x.kfj include1.tpl include2.tpl test_buffers.fits \
 	test_putcolj.fits test_putcolk.fits test_putcoll.fits \
 	test_putcols.fits test_putcolsb.fits test_putcolu.fits \
 	test_putcolui.fits test_putcoluj.fits test_putcoluj2.fits \
-	test_putcoluk.fits test_putkey.fits test_region.reg \
+	test_putcoluk.fits test_putkey.fits test_region.fits \
+	test_region.reg \
 	test_scalnull.fits test_section.fits test_wcssub.fits \
 	testprog.fit testprog.lis testf77.fit atestfil.fit \
 	btestfil.fit y.output *.gcno *.gcda *.gcov .libs/*.gcno \

@@ -11,6 +11,7 @@
 #include "test_macros.h"
 
 #define region_file "test_region.reg"
+#define region_fits_file "test_region.fits"
 
 static void
 write_region_file(const char *content)
@@ -1538,10 +1539,238 @@ test_box_too_many_params(void)
 	fail_if(status == 0);  /* should fail */
 }
 
+/*
+ * The WCS shared by the REGION extension below and by the callers reading
+ * it back: every numeric parameter is the same on both sides, so only the
+ * projection type can ever differ.  The circle sits 1000 pixels from the
+ * reference pixel, far enough off-axis that a projection change moves it
+ * by a readily measurable amount.
+ */
+#define rgn_crval1 10.0
+#define rgn_crval2 20.0
+#define rgn_crpix1 50.0
+#define rgn_crpix2 50.0
+#define rgn_cdelt1 (-0.01)
+#define rgn_cdelt2 0.01
+#define rgn_x 1050.0
+#define rgn_y 50.0
+
+/*
+ * Write a REGION extension holding a single circle, with the region's own
+ * WCS expressed as a TAN projection.  COMPONENT is an optional column, so
+ * it is written or omitted on request.
+ */
+static void
+write_region_extension(int with_component)
+{
+	fitsfile *f;
+	int status = 0;
+	char *ttype[] = {"X", "Y", "SHAPE", "R", "ROTANG", "COMPONENT"};
+	char *tform[] = {"1D", "1D", "20A", "1D", "1D", "1J"};
+	char *shape[] = {"CIRCLE"};
+	double x = rgn_x, y = rgn_y, r = 5.0, rot = 0.0;
+	int component = 1;
+	int ncols = with_component ? 6 : 5;
+
+	remove(region_fits_file);
+	call_02(ffinit, &f, region_fits_file);
+	call_04(ffcrim, f, BYTE_IMG, 0, NULL);
+	call_08(ffcrtb, f, BINARY_TBL, 1, ncols, ttype, tform, NULL, "REGION");
+
+	call_06(ffpcld, f, 1, 1, 1, 1, &x);
+	call_06(ffpcld, f, 2, 1, 1, 1, &y);
+	call_06(ffpcls, f, 3, 1, 1, 1, shape);
+	call_06(ffpcld, f, 4, 1, 1, 1, &r);
+	call_06(ffpcld, f, 5, 1, 1, 1, &rot);
+	if (with_component)
+		call_06(ffpclk, f, 6, 1, 1, 1, &component);
+
+	call_05(ffpkyd, f, "TCRVL1", rgn_crval1, 10, NULL);
+	call_05(ffpkyd, f, "TCRPX1", rgn_crpix1, 10, NULL);
+	call_05(ffpkyd, f, "TCDLT1", rgn_cdelt1, 10, NULL);
+	call_04(ffpkys, f, "TCTYP1", "RA---TAN", NULL);
+	call_05(ffpkyd, f, "TCRVL2", rgn_crval2, 10, NULL);
+	call_05(ffpkyd, f, "TCRPX2", rgn_crpix2, 10, NULL);
+	call_05(ffpkyd, f, "TCDLT2", rgn_cdelt2, 10, NULL);
+	call_04(ffpkys, f, "TCTYP2", "DEC--TAN", NULL);
+
+	call_01(ffclos, f);
+}
+
+/*
+ * The caller's WCS: the region's numbers, with the projection type asked
+ * for.
+ */
+static void
+caller_wcs(WCSdata *wcs, const char *type)
+{
+	memset(wcs, 0, sizeof(*wcs));
+	wcs->exists = 1;
+	wcs->xrefval = rgn_crval1;
+	wcs->yrefval = rgn_crval2;
+	wcs->xrefpix = rgn_crpix1;
+	wcs->yrefpix = rgn_crpix2;
+	wcs->xinc = rgn_cdelt1;
+	wcs->yinc = rgn_cdelt2;
+	wcs->rot = 0.0;
+	strcpy(wcs->type, type);
+}
+
+/*
+ * Where the stored circle lands once carried through world coordinates
+ * from the region's TAN frame into a caller frame of the given type --
+ * the same two steps region.c performs.  Deriving it rather than writing
+ * a constant keeps the expectation tied to the library's own arithmetic.
+ */
+static void
+transformed_position(char *type, double *x, double *y)
+{
+	int status = 0;
+	double xpos, ypos;
+
+	fail_st(ffwldp(rgn_x, rgn_y, rgn_crval1, rgn_crval2, rgn_crpix1,
+		       rgn_crpix2, rgn_cdelt1, rgn_cdelt2, 0.0, "-TAN",
+		       &xpos, &ypos, &status));
+	fail_st(ffxypx(xpos, ypos, rgn_crval1, rgn_crval2, rgn_crpix1,
+		       rgn_crpix2, rgn_cdelt1, rgn_cdelt2, 0.0, type,
+		       x, y, &status));
+
+	/* Guard the fixture: if the two frames ever stop disagreeing, the
+	   tests below would pass without a transform being applied. */
+	fail_if(fabs(*x - rgn_x) < 1.0);
+}
+
+/*
+ * fits_read_fits_region() must convert the region's coordinates into the
+ * caller's WCS when the two describe different projections.  Everything
+ * but the projection type is identical here, so the type is the only
+ * thing that can request the transform.
+ */
+static void
+test_fits_region_wcs_transform(void)
+{
+	fitsfile *f;
+	SAORegion *rgn = NULL;
+	WCSdata wcs;
+	int status = 0;
+	double expect_x, expect_y;
+
+	write_region_extension(1);
+	caller_wcs(&wcs, "-CAR");
+	transformed_position("-CAR", &expect_x, &expect_y);
+
+	call_03(ffopen, &f, region_fits_file, READONLY);
+	call_04(ffmnhd, f, BINARY_TBL, "REGION", 0);
+
+	/* Note: fits_read_fits_region() closes the file itself. */
+	call_03(fits_read_fits_region, f, &wcs, &rgn);
+	fail_if(rgn == NULL);
+	fail_if(rgn->nShapes != 1);
+	fail_if(rgn->Shapes[0].shape != circle_rgn);
+
+	fail_if(fabs(rgn->Shapes[0].param.gen.p[0] - expect_x) > 0.01);
+	fail_if(fabs(rgn->Shapes[0].param.gen.p[1] - expect_y) > 0.01);
+
+	fits_free_region(rgn);
+	remove(region_fits_file);
+}
+
+/*
+ * The matching case: identical projections must be read back unchanged.
+ */
+static void
+test_fits_region_wcs_no_transform(void)
+{
+	fitsfile *f;
+	SAORegion *rgn = NULL;
+	WCSdata wcs;
+	int status = 0;
+
+	write_region_extension(1);
+	caller_wcs(&wcs, "-TAN");
+
+	call_03(ffopen, &f, region_fits_file, READONLY);
+	call_04(ffmnhd, f, BINARY_TBL, "REGION", 0);
+
+	call_03(fits_read_fits_region, f, &wcs, &rgn);
+	fail_if(rgn == NULL);
+	fail_if(rgn->nShapes != 1);
+
+	fail_if(fabs(rgn->Shapes[0].param.gen.p[0] - rgn_x) > 0.01);
+	fail_if(fabs(rgn->Shapes[0].param.gen.p[1] - rgn_y) > 0.01);
+
+	fits_free_region(rgn);
+	remove(region_fits_file);
+}
+
+/*
+ * COMPONENT is an optional column, so a REGION extension without one must
+ * read normally -- and must still be transformed into the caller's WCS.
+ * The shapes then all belong to component 1.
+ */
+static void
+test_fits_region_no_component_column(void)
+{
+	fitsfile *f;
+	SAORegion *rgn = NULL;
+	WCSdata wcs;
+	int status = 0;
+	double expect_x, expect_y;
+
+	write_region_extension(0);
+	caller_wcs(&wcs, "-CAR");
+	transformed_position("-CAR", &expect_x, &expect_y);
+
+	call_03(ffopen, &f, region_fits_file, READONLY);
+	call_04(ffmnhd, f, BINARY_TBL, "REGION", 0);
+
+	call_03(fits_read_fits_region, f, &wcs, &rgn);
+	fail_if(rgn == NULL);
+	fail_if(rgn->nShapes != 1);
+	fail_if(rgn->Shapes[0].comp != 1);
+
+	/* The region's own WCS must still have been read, so the
+	   coordinates arrive in the caller's frame. */
+	fail_if(fabs(rgn->Shapes[0].param.gen.p[0] - expect_x) > 0.01);
+	fail_if(fabs(rgn->Shapes[0].param.gen.p[1] - expect_y) > 0.01);
+
+	fits_free_region(rgn);
+	remove(region_fits_file);
+}
+
+/*
+ * The same extension read with no input WCS at all: nothing to transform
+ * into, so the stored coordinates come back as they were written.
+ */
+static void
+test_fits_region_no_component_no_wcs(void)
+{
+	fitsfile *f;
+	SAORegion *rgn = NULL;
+	int status = 0;
+
+	write_region_extension(0);
+
+	call_03(ffopen, &f, region_fits_file, READONLY);
+	call_04(ffmnhd, f, BINARY_TBL, "REGION", 0);
+
+	call_03(fits_read_fits_region, f, NULL, &rgn);
+	fail_if(rgn == NULL);
+	fail_if(rgn->nShapes != 1);
+	fail_if(rgn->Shapes[0].comp != 1);
+
+	fail_if(fabs(rgn->Shapes[0].param.gen.p[0] - rgn_x) > 0.01);
+	fail_if(fabs(rgn->Shapes[0].param.gen.p[1] - rgn_y) > 0.01);
+
+	fits_free_region(rgn);
+	remove(region_fits_file);
+}
+
 static void
 cleanup(void)
 {
 	remove(region_file);
+	remove(region_fits_file);
 }
 
 int
@@ -1611,6 +1840,10 @@ main(void)
 
 	/* API tests */
 	test_fits_read_rgnfile();
+	test_fits_region_wcs_transform();
+	test_fits_region_wcs_no_transform();
+	test_fits_region_no_component_column();
+	test_fits_region_no_component_no_wcs();
 	test_fk5_format();
 	test_fk4_format();
 	test_icrs_format();
