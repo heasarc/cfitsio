@@ -5,13 +5,14 @@
    performing conversion between pixel arrays and line lists.  The
    compression technique is used in IRAF.
 */
-int pl_p2li (int *pxsrc, int xs, short *lldst, int npix);
+int pl_p2li (int *pxsrc, int xs, short *lldst, size_t dstlen, int npix);
 int pl_l2pi (short *ll_src, size_t srclen, int xs, int *px_dst, int npix);
 
 
 /*
  * PL_P2L -- Convert a pixel array to a line list.  The length of the list is
- * returned as the function value.
+ * returned as the function value, or -1 if the list does not fit in the
+ * dstlen shorts of the output buffer.
  *
  * Translated from the SPP version using xc -f, f2c.  8Sep99 DCT.
  */
@@ -23,10 +24,11 @@ int pl_l2pi (short *ll_src, size_t srclen, int xs, int *px_dst, int npix);
 #define max(a,b)        (((a)>(b))?(a):(b))
 #endif
 
-int pl_p2li (int *pxsrc, int xs, short *lldst, int npix)
+int pl_p2li (int *pxsrc, int xs, short *lldst, size_t dstlen, int npix)
 /* int *pxsrc;                      input pixel array */
 /* int xs;                          starting index in pxsrc (?) */
 /* short *lldst;                    encoded line list */
+/* size_t dstlen;                   number of shorts in lldst */
 /* int npix;                        number of pixels to convert */
 {
     /* System generated locals */
@@ -46,6 +48,9 @@ int pl_p2li (int *pxsrc, int xs, short *lldst, int npix)
     ret_val = 0;
     goto L100;
 L110:
+    if (dstlen < 7) {   /* no room for the line list header */
+        return -1;
+    }
     lldst[3] = -100;
     lldst[2] = 7;
     lldst[1] = 0;
@@ -101,12 +106,18 @@ L131:
         if (! (abs(dv) > 4095)) {
             goto L190;
         }
+        if ((size_t) op + 1 > dstlen) {
+            return -1;
+        }
         lldst[op] = (short) ((pv & 4095) + 4096);
         ++op;
         lldst[op] = (short) (pv / 4096);
         ++op;
         goto L191;
 L190:
+        if ((size_t) op > dstlen) {
+            return -1;
+        }
         if (! (dv < 0)) {
             goto L200;
         }
@@ -133,6 +144,9 @@ L230:
         if (! (nz > 0)) {
             goto L232;
         }
+        if ((size_t) op > dstlen) {
+            return -1;
+        }
         lldst[op] = (short) min(4095,nz);
         ++op;
 /* L231: */
@@ -149,6 +163,9 @@ L220:
 L250:
         if (! (np > 0)) {
             goto L252;
+        }
+        if ((size_t) op > dstlen) {
+            return -1;
         }
         lldst[op] = (short) (min(4095,np) + 16384);
         ++op;
