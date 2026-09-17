@@ -297,6 +297,11 @@ ADD_SUBDIRECTORY(charls)
 # statically absorbed here, so consumers of an installed cfitsio must not be
 # told to look for a charls target that was never installed.
 TARGET_LINK_LIBRARIES(${LIB_NAME} $<BUILD_INTERFACE:charls>)
+# Without this, imcompress.c compiles its JPEG-LS entry points as run-time
+# errors even though charls is linked in: the library builds and links
+# cleanly, then reports "CFITSIO was built without CharLS" at run time.
+# The autotools build sets this via CHARLS_CPPFLAGS in Makefile.in.
+TARGET_COMPILE_DEFINITIONS(${LIB_NAME} PRIVATE HAVE_CHARLS)
 SET (PKG_CONFIG_LIBS "${PKG_CONFIG_LIBS} -lcharls")
 
 #==============================================================================
