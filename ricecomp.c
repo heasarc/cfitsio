@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 /*
  * nonzero_count is lookup table giving number of bits in 8-bit values not including
@@ -74,6 +75,15 @@ typedef struct {
 static void start_outputing_bits(Buffer *buffer);
 static int done_outputing_bits(Buffer *buffer);
 static int output_nbits(Buffer *buffer, int bits, int n);
+
+static inline unsigned int safe_read_byte(unsigned char **c, unsigned char *cend)
+{
+   if (*c >= cend) {
+      ffpmsg("decompression error: buffer overrun");
+      return UINT_MAX;
+   }
+      return *(*c)++;
+}
 
 /*  only used for diagnoistics
 static int case1, case2, case3;
@@ -875,7 +885,7 @@ int fits_rdecomp (unsigned char *c,		/* input buffer			*/
 int i, k, imax;
 int nbits, nzero, fs;
 unsigned char *cend, bytevalue;
-unsigned int b, diff, lastpix;
+unsigned int b, btst, diff, lastpix;
 int fsmax, fsbits, bbits;
 extern const int nonzero_count[];
 
@@ -946,13 +956,17 @@ extern const int nonzero_count[];
     c += 4;  
     cend = c + clen - 4;
 
-    b = *c++;		    /* bit buffer			*/
+    b = safe_read_byte(&c, cend); /* bit buffer    */
+    if (b == UINT_MAX)
+       return 1;
     nbits = 8;		    /* number of bits remaining in b	*/
     for (i = 0; i<nx; ) {
 	/* get the FS value from first fsbits */
 	nbits -= fsbits;
 	while (nbits < 0) {
-	    b = (b<<8) | (*c++);
+            btst = safe_read_byte(&c, cend);
+            if (btst == UINT_MAX)  return 1;
+	    b = (b<<8) | btst;
 	    nbits += 8;
 	}
 	fs = (b >> nbits) - 1;
@@ -970,11 +984,13 @@ extern const int nonzero_count[];
 		k = bbits - nbits;
 		diff = b<<k;
 		for (k -= 8; k >= 0; k -= 8) {
-		    b = *c++;
+		    b = safe_read_byte(&c, cend);
+                    if (b == UINT_MAX) return 1;
 		    diff |= b<<k;
 		}
 		if (nbits>0) {
-		    b = *c++;
+		    b = safe_read_byte(&c, cend);
+                    if (b == UINT_MAX) return 1;
 		    diff |= b>>(-k);
 		    b &= (1<<nbits)-1;
 		} else {
@@ -1000,7 +1016,8 @@ extern const int nonzero_count[];
 		/* count number of leading zeros */
 		while (b == 0) {
 		    nbits += 8;
-		    b = *c++;
+		    b = safe_read_byte(&c, cend);
+                    if (b == UINT_MAX) return 1;
 		}
 		nzero = nbits - nonzero_count[b];
 		nbits -= nzero+1;
@@ -1009,7 +1026,9 @@ extern const int nonzero_count[];
 		/* get the FS trailing bits */
 		nbits -= fs;
 		while (nbits < 0) {
-		    b = (b<<8) | (*c++);
+                    btst = safe_read_byte(&c, cend);
+                    if (btst == UINT_MAX)  return 1;
+		    b = (b<<8) | btst;
 		    nbits += 8;
 		}
 		diff = (nzero<<fs) | (b>>nbits);
@@ -1049,7 +1068,7 @@ int i, imax;
 int k;
 int nbits, nzero, fs;
 unsigned char *cend, bytevalue;
-unsigned int b, diff, lastpix;
+unsigned int b, btst, diff, lastpix;
 int fsmax, fsbits, bbits;
 extern const int nonzero_count[];
 
@@ -1103,6 +1122,11 @@ extern const int nonzero_count[];
     /* first 2 bytes of input buffer contain the value of the first */
     /* 2 byte integer value, without any encoding */
     
+    if (clen < 2)
+    {
+       ffpmsg("decompression error: input buffer not properly allocated");
+       return 1;
+    }
     lastpix = 0;
     bytevalue = c[0];
     lastpix = lastpix | (bytevalue<<8);
@@ -1112,13 +1136,17 @@ extern const int nonzero_count[];
     c += 2;  
     cend = c + clen - 2;
 
-    b = *c++;		    /* bit buffer			*/
+    b = safe_read_byte(&c, cend);  /* bit buffer  */
+    if (b == UINT_MAX)
+       return 1;
     nbits = 8;		    /* number of bits remaining in b	*/
     for (i = 0; i<nx; ) {
 	/* get the FS value from first fsbits */
 	nbits -= fsbits;
 	while (nbits < 0) {
-	    b = (b<<8) | (*c++);
+            btst = safe_read_byte(&c, cend);
+            if (btst == UINT_MAX)  return 1;
+	    b = (b<<8) | btst;
 	    nbits += 8;
 	}
 	fs = (b >> nbits) - 1;
@@ -1136,11 +1164,13 @@ extern const int nonzero_count[];
 		k = bbits - nbits;
 		diff = b<<k;
 		for (k -= 8; k >= 0; k -= 8) {
-		    b = *c++;
+		    b = safe_read_byte(&c, cend);
+                    if (b == UINT_MAX) return 1;
 		    diff |= b<<k;
 		}
 		if (nbits>0) {
-		    b = *c++;
+		    b = safe_read_byte(&c, cend);
+                    if (b == UINT_MAX) return 1;
 		    diff |= b>>(-k);
 		    b &= (1<<nbits)-1;
 		} else {
@@ -1167,7 +1197,8 @@ extern const int nonzero_count[];
 		/* count number of leading zeros */
 		while (b == 0) {
 		    nbits += 8;
-		    b = *c++;
+		    b = safe_read_byte(&c, cend);
+                    if (b == UINT_MAX) return 1;
 		}
 		nzero = nbits - nonzero_count[b];
 		nbits -= nzero+1;
@@ -1176,7 +1207,9 @@ extern const int nonzero_count[];
 		/* get the FS trailing bits */
 		nbits -= fs;
 		while (nbits < 0) {
-		    b = (b<<8) | (*c++);
+                    btst = safe_read_byte(&c, cend);
+                    if (btst == UINT_MAX)  return 1;
+		    b = (b<<8) | btst;
 		    nbits += 8;
 		}
 		diff = (nzero<<fs) | (b>>nbits);
@@ -1216,7 +1249,7 @@ int i, imax;
 int k;
 int nbits, nzero, fs;
 unsigned char *cend;
-unsigned int b, diff, lastpix;
+unsigned int b, btst, diff, lastpix;
 int fsmax, fsbits, bbits;
 extern const int nonzero_count[];
 
@@ -1270,17 +1303,26 @@ extern const int nonzero_count[];
     /* first byte of input buffer contain the value of the first */
     /* byte integer value, without any encoding */
     
+    if (clen < 1)
+    {
+       ffpmsg("decompression error: input buffer not properly allocated");
+       return 1;
+    }
     lastpix = c[0];
     c += 1;  
     cend = c + clen - 1;
 
-    b = *c++;		    /* bit buffer			*/
+    b = safe_read_byte(&c, cend); /* bit buffer    */
+    if (b == UINT_MAX)
+       return 1;
     nbits = 8;		    /* number of bits remaining in b	*/
     for (i = 0; i<nx; ) {
 	/* get the FS value from first fsbits */
 	nbits -= fsbits;
 	while (nbits < 0) {
-	    b = (b<<8) | (*c++);
+            btst = safe_read_byte(&c, cend);
+            if (btst == UINT_MAX)  return 1;
+	    b = (b<<8) | btst;
 	    nbits += 8;
 	}
 	fs = (b >> nbits) - 1;
@@ -1298,11 +1340,13 @@ extern const int nonzero_count[];
 		k = bbits - nbits;
 		diff = b<<k;
 		for (k -= 8; k >= 0; k -= 8) {
-		    b = *c++;
+		    b = safe_read_byte(&c, cend);
+                    if (b == UINT_MAX) return 1;
 		    diff |= b<<k;
 		}
 		if (nbits>0) {
-		    b = *c++;
+		    b = safe_read_byte(&c, cend);
+                    if (b == UINT_MAX) return 1;
 		    diff |= b>>(-k);
 		    b &= (1<<nbits)-1;
 		} else {
@@ -1329,7 +1373,8 @@ extern const int nonzero_count[];
 		/* count number of leading zeros */
 		while (b == 0) {
 		    nbits += 8;
-		    b = *c++;
+		    b = safe_read_byte(&c, cend);
+                    if (b == UINT_MAX) return 1;
 		}
 		nzero = nbits - nonzero_count[b];
 		nbits -= nzero+1;
@@ -1338,7 +1383,9 @@ extern const int nonzero_count[];
 		/* get the FS trailing bits */
 		nbits -= fs;
 		while (nbits < 0) {
-		    b = (b<<8) | (*c++);
+                    btst = safe_read_byte(&c, cend);
+                    if (btst == UINT_MAX)  return 1;
+		    b = (b<<8) | btst;
 		    nbits += 8;
 		}
 		diff = (nzero<<fs) | (b>>nbits);
