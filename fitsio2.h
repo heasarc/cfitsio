@@ -98,6 +98,11 @@ extern int Fitsio_Pthread_Status;
 #define BYTESWAPPED FALSE
 #define LONGSIZE 32
 
+#elif defined(__x86_64__) && defined(__ILP32__)
+		/* 64-bit PC with 32-bit integer/long/pointers (ILP32) */
+#define BYTESWAPPED TRUE
+#define LONGSIZE 32
+
 #elif defined(__ia64__)  || defined(__x86_64__) || defined(__AARCH64EL__)
                   /*  Intel itanium 64-bit PC, or AMD opteron 64-bit PC */
 #define BYTESWAPPED TRUE
