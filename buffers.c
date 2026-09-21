@@ -84,7 +84,7 @@ int ffpbyt(fitsfile *fptr,   /* I - FITS file pointer                    */
     if (nbytes >= MINDIRECT)
     {
       /* write large blocks of data directly to disk instead of via buffers */
-      /* first, fill up the current IO buffer before flushing it to disk */
+      /* first, fill up the current IO buffer before flushing it */
 
       nbuff = (fptr->Fptr)->curbuf;      /* current IO buffer number */
       filepos = (fptr->Fptr)->bytepos;   /* save the write starting position */
@@ -104,12 +104,12 @@ int ffpbyt(fitsfile *fptr,   /* I - FITS file pointer                    */
         (fptr->Fptr)->dirty[nbuff] = TRUE;       /* mark record as having been modified */
       }
 
-      for (ii = 0; ii < NIOBUF; ii++) /* flush any affected buffers to disk */
+      for (ii = 0; ii < NIOBUF; ii++) /* flush any affected buffers */
       {
         if ((fptr->Fptr)->bufrecnum[ii] >= recstart
             && (fptr->Fptr)->bufrecnum[ii] <= recend )
         {
-          if ((fptr->Fptr)->dirty[ii])        /* flush modified buffer to disk */
+          if ((fptr->Fptr)->dirty[ii])        /* flush modified buffer */
              ffbfwt(fptr->Fptr, ii, status);
 
           (fptr->Fptr)->bufrecnum[ii] = -1;  /* disassociate buffer from the file */
@@ -313,12 +313,12 @@ int ffgbyt(fitsfile *fptr,    /* I - FITS file pointer             */
       recstart = (long) (filepos / IOBUFLEN);               /* starting record */
       recend = (long) ((filepos + nbytes - 1) / IOBUFLEN);  /* ending record   */
 
-      for (ii = 0; ii < NIOBUF; ii++) /* flush any affected buffers to disk */
+      for (ii = 0; ii < NIOBUF; ii++) /* flush any affected buffers */
       {
         if ((fptr->Fptr)->dirty[ii] && 
             (fptr->Fptr)->bufrecnum[ii] >= recstart && (fptr->Fptr)->bufrecnum[ii] <= recend)
             {
-              ffbfwt(fptr->Fptr, ii, status);    /* flush modified buffer to disk */
+              ffbfwt(fptr->Fptr, ii, status);    /* flush modified buffer */
             }
       }
 
@@ -506,7 +506,7 @@ int ffldrc(fitsfile *fptr,        /* I - FITS file pointer             */
        return(*status = TOO_MANY_FILES); 
 
     if ((fptr->Fptr)->dirty[nbuff])
-       ffbfwt(fptr->Fptr, nbuff, status); /* write dirty buffer to disk */
+       ffbfwt(fptr->Fptr, nbuff, status); /* write dirty buffer */
 
     if (rstart >= (fptr->Fptr)->filesize)  /* EOF? */
     {
@@ -564,8 +564,12 @@ int ffwhbf(fitsfile *fptr,        /* I - FITS file pointer             */
 int ffflus(fitsfile *fptr,   /* I - FITS file pointer                       */
            int *status)      /* IO - error status                           */
 /*
-  Flush all the data in the current FITS file to disk. This ensures that if
-  the program subsequently dies, the disk FITS file will be closed correctly.
+  Write all of the data with the underlying write function.  This
+  does *not* necessarily sync all of the data to the underlying
+  physical medium (disk).  It merely flushes data to the operating
+  system, but the operating system may still be buffering data that
+  is not yet on the physical device.  (eg, fflush() will be called,
+  but fsync() will not.)
 */
 {
     int hdunum, hdutype;
@@ -578,7 +582,7 @@ int ffflus(fitsfile *fptr,   /* I - FITS file pointer                       */
     if (ffchdu(fptr,status) > 0)   /* close out the current HDU */
         ffpmsg("ffflus could not close the current HDU.");
 
-    ffflsh(fptr, FALSE, status);  /* flush any modified IO buffers to disk */
+    ffflsh(fptr, FALSE, status);  /* flush any modified IO buffers */
 
     if (ffgext(fptr, hdunum - 1, &hdutype, status) > 0) /* reopen HDU */
         ffpmsg("ffflus could not reopen the current HDU.");
@@ -591,7 +595,7 @@ int ffflsh(fitsfile *fptr,        /* I - FITS file pointer           */
            int *status)           /* IO - error status               */
 {
 /*
-  flush all dirty IO buffers associated with the file to disk
+  flush all dirty IO buffers associated with the file 
 */
     int ii;
 
@@ -603,7 +607,7 @@ int ffflsh(fitsfile *fptr,        /* I - FITS file pointer           */
 */
     for (ii = 0; ii < NIOBUF; ii++)
     {
-	/* flush modified buffer to disk */
+	/* flush modified buffer */
         if ((fptr->Fptr)->bufrecnum[ii] >= 0 &&(fptr->Fptr)->dirty[ii])
            ffbfwt(fptr->Fptr, ii, status);
 
@@ -612,7 +616,7 @@ int ffflsh(fitsfile *fptr,        /* I - FITS file pointer           */
     }
 
     if (*status != READONLY_FILE)
-      ffflushx(fptr->Fptr);  /* flush system buffers to disk */
+      ffflushx(fptr->Fptr);  /* flush system buffers */
 
     return(*status);
 }
