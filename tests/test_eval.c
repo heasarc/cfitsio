@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <math.h>
 #include "fitsio.h"
 #include "test_macros.h"
 
@@ -2396,6 +2397,47 @@ test_ffcrow_double_column_arithmetic(void)
 	call_01(ffclos, f);
 }
 
+/*
+ * Test the four-argument ANGSEP() function.  The result must be the same
+ * whether the arguments are constants (folded at parse time in New_Func)
+ * or column expressions (evaluated per row in Do_Func).
+ */
+static void
+test_ffcrow_angsep(void)
+{
+	fitsfile *f;
+	int status = 0;
+	double result[3];
+	int anynul;
+
+	create_test_table(&f);
+
+	/* Constant arguments: folded at parse time.  0,0 to 0,90 is a
+	   quarter turn along a meridian, i.e. 90 degrees. */
+	call_08(ffcrow, f, TDOUBLE, "ANGSEP(0,0,0,90)",
+		1, 1, NULL, result, &anynul);
+	fail_if(fabs(result[0] - 90.0) > 1.0e-9);
+
+	/* The same separation with a non-constant argument, to show the two
+	   evaluation paths agree.  INTCOL is 1,2,3,... so 0*INTCOL is 0. */
+	call_08(ffcrow, f, TDOUBLE, "ANGSEP(0.0*INTCOL,0.0,0.0,90.0)",
+		1, 3, NULL, result, &anynul);
+	fail_if(fabs(result[0] - 90.0) > 1.0e-9);
+	fail_if(fabs(result[2] - 90.0) > 1.0e-9);
+
+	/* Identical positions are zero degrees apart. */
+	call_08(ffcrow, f, TDOUBLE, "ANGSEP(10,20,10,20)",
+		1, 1, NULL, result, &anynul);
+	fail_if(fabs(result[0]) > 1.0e-9);
+
+	/* One degree of RA at declination 60 is half a degree on the sky. */
+	call_08(ffcrow, f, TDOUBLE, "ANGSEP(0,60,1,60)",
+		1, 1, NULL, result, &anynul);
+	fail_if(fabs(result[0] - 0.5) > 1.0e-3);
+
+	call_01(ffclos, f);
+}
+
 int
 main(void)
 {
@@ -2549,6 +2591,9 @@ main(void)
 
 	/* Double-precision column arithmetic */
 	test_ffcrow_double_column_arithmetic();
+
+	/* Angular separation */
+	test_ffcrow_angsep();
 
 	remove(test_path);
 
