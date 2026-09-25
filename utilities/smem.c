@@ -1,11 +1,6 @@
 #include <stdio.h>
-#include <memory.h>
-#include <string.h>
-#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <stdlib.h>
-#else
-#include <malloc.h>
-#endif
+#include <string.h>
 #include "fitsio.h"     /* needed to define LONGLONG */
 #include "drvrsmem.h"   /* uses LONGLONG */
 
