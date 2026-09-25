@@ -69,12 +69,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
-#ifdef sparc
-#include <malloc.h>
-#include <memory.h>
-#endif
-
 #include <string.h>
 #include "fitsio2.h"
 #include "grparser.h"

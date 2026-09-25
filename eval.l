@@ -60,11 +60,7 @@
 #include <math.h>
 #include <string.h>
 #include <ctype.h>
-#ifdef sparc
-#include <malloc.h>
-#else
 #include <stdlib.h>
-#endif
 #include "eval_defs.h"
 #include "eval_tab.h"
 
