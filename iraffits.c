@@ -49,6 +49,7 @@
 #include <stdlib.h>
 #include <stddef.h>  /* stddef.h is apparently needed to define size_t */
 #include <string.h>
+#include <limits.h>
 
 #define FILE_NOT_OPENED 104
 
@@ -347,7 +348,7 @@ static int irafrdimage (
 {
     FILE *fd;
     char *bang;
-    int nax = 1, naxis1 = 1, naxis2 = 1, naxis3 = 1, naxis4 = 1, npaxis1 = 1, npaxis2;
+    int nax = 1, naxis1 = 1, naxis2 = 1, naxis3 = 1, naxis4 = 1, npaxis1 = 1, npaxis2, overflowErr=0;
     int bitpix, bytepix, i;
     char *fitsheader, *image;
     int nbr, nbimage, nbaxis, nbl, nbdiff;
@@ -427,7 +428,43 @@ static int irafrdimage (
     else
 	bytepix = bitpix / 8;
 
-    nbimage = naxis1 * naxis2 * naxis3 * naxis4 * bytepix;
+    if (naxis1 < 0 || naxis2 < 0 || naxis3 < 0 || naxis4 < 0)
+    {
+       ffpmsg("IRAFRIMAGE: Negative val not allowed for image dimension");
+       fclose (fd);
+       return (*status = FILE_NOT_OPENED);
+    }
+    /* perform naxis1 * naxis2 * naxis3 * naxis4 * bytepix while
+       checking for overflow */
+    nbimage = naxis1;
+    if (naxis2 && nbimage > INT_MAX/naxis2)
+       overflowErr=1;
+    else
+    {
+       nbimage *= naxis2;
+       if (naxis3 && nbimage > INT_MAX/naxis3)
+          overflowErr=1;
+       else
+       {
+          nbimage *= naxis3;
+          if (naxis4 && nbimage > INT_MAX/naxis4)
+             overflowErr=1;
+          else
+          {
+             nbimage *= naxis4;
+             if (bytepix && nbimage > INT_MAX/bytepix)
+                overflowErr=1;
+             else
+                nbimage *= bytepix;
+          }
+       }
+    }
+    if (overflowErr)
+    {
+       ffpmsg("IRAFRIMAGE: Integer overflow while calculating dimensions");
+       fclose (fd);
+       return (*status = FILE_NOT_OPENED);
+    }
     
     newfilesize = *filesize + nbimage;  /* header + data */
     newfilesize = (((newfilesize - 1) / 2880 ) + 1 ) * 2880;
