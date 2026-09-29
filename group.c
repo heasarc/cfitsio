@@ -3255,8 +3255,19 @@ int ffgmrm(fitsfile *gfptr,  /* FITS file pointer to group table             */
 		      *status = fits_read_key_longstr(mfptr,keyword,&tgrplc,
 						      card, status);
 		      if (0 == *status) {
-			strcpy(grplc,tgrplc);
-			free(tgrplc);
+                        if (strlen(tgrplc) > FLEN_FILENAME-1)
+                        {
+                           snprintf(card,FLEN_CARD,"GRPLC%d keyword string is too long (ffgmrm)",index);
+                           ffpmsg(card);
+                           *status = URL_PARSE_ERROR;
+                           free(tgrplc);
+                           continue;
+                        }
+                        else
+                        {
+			   strcpy(grplc,tgrplc);
+			   free(tgrplc);
+                        }
 		      }
 		      		      
 		      if(*status == KEY_NO_EXIST)
