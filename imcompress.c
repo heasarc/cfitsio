@@ -1476,6 +1476,15 @@ int imcomp_calc_max_elem (int comptype, int nx, int zbitpix, int blocksize)
         else
             return( (int) (nx * 4.4 + 26));   /* will be compressing 32-bit int array */
     }
+    else if (comptype == PLIO_1)
+    {
+        /* pl_p2li writes a 7 short header, followed by at most 3 shorts per
+	   pixel (2 to encode a pixel value that differs from the previous one
+	   by more than 4095, plus 1 for the run length).  Note that this is
+	   larger than the uncompressed 32-bit array for small tiles. */
+
+        return((int) ((3 * (size_t) nx + 7) * sizeof(short)));
+    }
     else
         return(nx * sizeof(int));
 }
@@ -1967,7 +1976,7 @@ int imcomp_compress_tile (fitsfile *outfptr,
                 }
               }
 
-  	      nelem = pl_p2li (idata, 1, cbuf, tilelen);
+  	      nelem = pl_p2li (idata, 1, cbuf, clen / sizeof(short), tilelen);
 
 	      if (nelem < 0)  /* data compression error condition */
               {
