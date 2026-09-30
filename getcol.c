@@ -75,7 +75,14 @@ int ffgpxvll( fitsfile *fptr, /* I - FITS file pointer                       */
 
     /* get the size of the image */
     ffgidm(fptr, &naxis, status);
-
+    
+    if (naxis > 9)
+    {
+       ffpmsg("ffgpxv function is currently limited to a maximum 9 dimensions");
+       *status = BAD_DIMEN;
+       return(*status);
+    }
+    
     ffgiszll(fptr, 9, naxes, status);
 
     if (naxis == 0 || naxes[0] == 0) {
@@ -305,6 +312,14 @@ int ffgpxfll( fitsfile *fptr, /* I - FITS file pointer                       */
 
     /* get the size of the image */
     ffgidm(fptr, &naxis, status);
+
+    if (naxis > 9)
+    {
+       ffpmsg("ffgpxf function is currently limited to a maximum 9 dimensions");
+       *status = BAD_DIMEN;
+       return(*status);
+    }
+    
     ffgiszll(fptr, 9, naxes, status);
 
     /* calculate the position of the first element in the array */
@@ -426,6 +441,14 @@ int ffgsv(  fitsfile *fptr,   /* I - FITS file pointer                       */
 
     /* get the size of the image */
     ffgidm(fptr, &naxis, status);
+    
+    if (naxis > 9)
+    {
+       ffpmsg("ffgsv function is currently limited to a maximum 9 dimensions");
+       *status = BAD_DIMEN;
+       return(*status);
+    }
+    
     ffgisz(fptr, 9, naxes, status);
 
     /* test for the important special case where we are reading the whole image */
