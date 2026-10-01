@@ -1077,7 +1077,7 @@ char tmagic[2];
 	*ny =readint(infile);				/* y size of image			*/
 	*scale=readint(infile);				/* scale factor for digitization	*/
 	
-        if ((*nx) > INT_MAX/(*ny)) {
+        if ((*ny)==0 ||(*nx) > INT_MAX/(*ny)) {
                 ffpmsg("numerical overflow during decompression");
                 return(DATA_DECOMPRESSION_ERR);
         }
