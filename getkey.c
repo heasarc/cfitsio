@@ -3405,7 +3405,7 @@ int ffgttb(fitsfile *fptr,      /* I - FITS file pointer*/
     if (ffgtkn(fptr, 8, "TFIELDS", tfields, status) == BAD_ORDER) /* 8th key*/
         return(*status = NO_TFIELDS);  /* keyword not TFIELDS */
     else if (*status == NOT_POS_INT || *tfields > 999)
-        return(*status == BAD_TFIELDS); /* bad TFIELDS value */
+        return(*status = BAD_TFIELDS); /* bad TFIELDS value */
 
 
     if (*status > 0)
