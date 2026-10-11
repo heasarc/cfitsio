@@ -91,7 +91,8 @@ SERVICES PROVIDED HEREUNDER."
 #if defined(_OFF_T) \
     || (defined(__GLIBC__) && defined(__off_t_defined)) \
     || (defined(__MINGW32__) && defined(_OFF_T_DEFINED)) \
-    || defined(_MIPS_SZLONG) || defined(__APPLE__) || defined(_AIX)
+    || defined(_MIPS_SZLONG) || defined(__APPLE__) || defined(_AIX) \
+    || defined(__ANDROID__)
 #    define OFF_T off_t
 #elif defined(__BORLANDC__) || (defined(_MSC_VER) && (_MSC_VER>= 1400))
 #    define OFF_T long long
