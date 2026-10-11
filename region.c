@@ -1529,6 +1529,7 @@ int fits_read_fits_region ( fitsfile *fptr,
 
   if ( ffgcno(fptr, CASEINSEN, colname[5], &icol[5], status) ) {
        got_component = 0;
+       *status = 0;
   }
 
   /* if there was input WCS then read the WCS info for the region in case they */
@@ -1559,13 +1560,13 @@ int fits_read_fits_region ( fitsfile *fptr,
 	   fabs(regwcs->xinc-wcs->xinc) > 1.0e-6 ||
 	   fabs(regwcs->yinc-wcs->yinc) > 1.0e-6 ||
 	   fabs(regwcs->rot-wcs->rot) > 1.0e-6 ||
-	   !strcmp(regwcs->type,wcs->type) ) dotransform = 1;
+	   strcmp(regwcs->type,wcs->type) ) dotransform = 1;
     }
   }
 
   /* get the sizes of the X, Y, R, and ROTANG vectors */
 
-  for (i=0; i<6; i++) {
+  for (i=0; i < (got_component ? 6 : 5); i++) {
     if ( ffgtdm(fptr, icol[i], 1, &idum, &icsize[i], status) ) {
       ffpmsg("Could not find vector size of column.");
       goto error;
