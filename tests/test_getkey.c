@@ -313,6 +313,167 @@ test_ffpknjj(void)
 	call_01(ffclos, f);
 }
 
+/*
+ * ffgttb validates the mandatory table keywords, so exercising it needs
+ * headers the library itself would never write.  Build them by hand.
+ */
+
+/* Write one 80 column card, blank padded. */
+static void
+put_card(FILE *fp, long *nbytes, const char *card)
+{
+	char buf[81];
+
+	snprintf(buf, sizeof(buf), "%-80.80s", card);
+	fwrite(buf, 1, 80, fp);
+	*nbytes += 80;
+}
+
+/* Pad with blanks out to the next 2880 byte block. */
+static void
+pad_block(FILE *fp, long *nbytes)
+{
+	while (*nbytes % 2880) {
+		fputc(' ', fp);
+		(*nbytes)++;
+	}
+}
+
+/*
+ * An empty primary array followed by a one column binary table.  The three
+ * cards ffgttb is being tested on are passed in whole.
+ */
+static void
+write_table_file(const char *path, const char *naxis1, const char *naxis2,
+		 const char *tfields)
+{
+	FILE *fp = fopen(path, "wb");
+	long n = 0;
+	int i;
+
+	fail_if(fp == NULL);
+
+	put_card(fp, &n, "SIMPLE  =                    T");
+	put_card(fp, &n, "BITPIX  =                    8");
+	put_card(fp, &n, "NAXIS   =                    0");
+	put_card(fp, &n, "EXTEND  =                    T");
+	put_card(fp, &n, "END");
+	pad_block(fp, &n);
+
+	put_card(fp, &n, "XTENSION= 'BINTABLE'");
+	put_card(fp, &n, "BITPIX  =                    8");
+	put_card(fp, &n, "NAXIS   =                    2");
+	put_card(fp, &n, naxis1);
+	put_card(fp, &n, naxis2);
+	put_card(fp, &n, "PCOUNT  =                    0");
+	put_card(fp, &n, "GCOUNT  =                    1");
+	put_card(fp, &n, tfields);
+	put_card(fp, &n, "TFORM1  = '10A     '");
+	put_card(fp, &n, "TTYPE1  = 'COL1    '");
+	put_card(fp, &n, "END");
+	pad_block(fp, &n);
+
+	for (i = 0; i < 10; i++) {
+		fputc('x', fp);
+		n++;
+	}
+	pad_block(fp, &n);
+
+	fail_if(fclose(fp) != 0);
+}
+
+/* Status left by moving to the table, or 0 if it was accepted. */
+static int
+move_to_table(void)
+{
+	fitsfile *f;
+	int status = 0;
+	int closestatus = 0;
+	int hdutype = 0;
+
+	call_03(ffopen, &f, test_path, READONLY);
+	ffmahd(f, 2, &hdutype, &status);
+	ffclos(f, &closestatus);
+	fail_if(closestatus != 0);
+	ffcmsg();
+	return status;
+}
+
+static void
+test_ffgttb_bad_keywords(void)
+{
+	/*
+	 * A value that is not a positive integer has to be reported as such.
+	 * These three checks used to compare where they meant to assign, so
+	 * ffgttb returned 0 with the status still set to NOT_POS_INT: the
+	 * caller carried on into ffbinit with uninitialised keyword values
+	 * and reported whatever error that ran into next.
+	 */
+	write_table_file(test_path, "NAXIS1  =                   -1",
+			 "NAXIS2  =                    1",
+			 "TFIELDS =                    1");
+	fail_if(move_to_table() != BAD_NAXES);
+
+	write_table_file(test_path, "NAXIS1  =                   10",
+			 "NAXIS2  =                   -1",
+			 "TFIELDS =                    1");
+	fail_if(move_to_table() != BAD_NAXES);
+
+	/* Not an integer at all. */
+	write_table_file(test_path, "NAXIS1  = 'abc'",
+			 "NAXIS2  =                    1",
+			 "TFIELDS =                    1");
+	fail_if(move_to_table() != BAD_NAXES);
+
+	write_table_file(test_path, "NAXIS1  =                   10",
+			 "NAXIS2  =                    1",
+			 "TFIELDS =                   -1");
+	fail_if(move_to_table() != BAD_TFIELDS);
+
+	/*
+	 * More than 999 fields cannot be written as valid FITS - TFORM1000
+	 * is a nine character keyword name - and the limit is checked for,
+	 * but the result of the check was being discarded.
+	 */
+	write_table_file(test_path, "NAXIS1  =                   10",
+			 "NAXIS2  =                    1",
+			 "TFIELDS =                 1000");
+	fail_if(move_to_table() != BAD_TFIELDS);
+}
+
+static void
+test_ffgttb_good_keywords(void)
+{
+	fitsfile *f;
+	int status = 0;
+	int hdutype = 0;
+	LONGLONG nrows = 0;
+	int ncols = 0;
+
+	write_table_file(test_path, "NAXIS1  =                   10",
+			 "NAXIS2  =                    1",
+			 "TFIELDS =                    1");
+
+	call_03(ffopen, &f, test_path, READONLY);
+	call_03(ffmahd, f, 2, &hdutype);
+	fail_if(hdutype != BINARY_TBL);
+	call_02(ffgnrwll, f, &nrows);
+	call_02(ffgncl, f, &ncols);
+	fail_if(nrows != 1);
+	fail_if(ncols != 1);
+	call_01(ffclos, f);
+
+	/*
+	 * Zero is a legal value for these keywords, so ffgttb has nothing to
+	 * say about this header; the complaint comes from the later check
+	 * that the column widths add up to NAXIS1.
+	 */
+	write_table_file(test_path, "NAXIS1  =                    0",
+			 "NAXIS2  =                    0",
+			 "TFIELDS =                    1");
+	fail_if(move_to_table() != BAD_ROW_WIDTH);
+}
+
 int
 main(void)
 {
@@ -334,6 +495,10 @@ main(void)
 
 	/* Keyword writing */
 	test_ffpknjj();
+
+	/* Mandatory table keywords */
+	test_ffgttb_good_keywords();
+	test_ffgttb_bad_keywords();
 
 	return 0;
 }
