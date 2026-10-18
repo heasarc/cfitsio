@@ -6,6 +6,7 @@ UNIT_TESTS = \
 	tests/test_editcol \
 	tests/test_edithdu \
 	tests/test_eval \
+	tests/test_fitsverify \
 	tests/test_fileops \
 	tests/test_find_match_delim \
 	tests/test_getcol \
@@ -64,6 +65,7 @@ tests_test_drvrsmem_SOURCES = tests/test_drvrsmem.c
 tests_test_editcol_SOURCES = tests/test_editcol.c
 tests_test_edithdu_SOURCES = tests/test_edithdu.c
 tests_test_eval_SOURCES = tests/test_eval.c
+tests_test_fitsverify_SOURCES = tests/test_fitsverify.c
 tests_test_fileops_SOURCES = tests/test_fileops.c
 tests_test_find_match_delim_SOURCES = tests/test_find_match_delim.c
 tests_test_getcol_SOURCES = tests/test_getcol.c
@@ -125,6 +127,8 @@ CLEANFILES += \
 	test_edithdu2.fits \
 	test_edithdu3.fits \
 	test_eval.fits \
+	test_fitsverify_report.txt \
+	test_fitsverify.fits \
 	test_getcol.fits \
 	test_getcolb.fits \
 	test_getcold.fits \
