@@ -195,7 +195,7 @@ void init_hdu(fitsfile *infits, 	/* input fits file   */
     LONGLONG lv,lu=0L; 
     
 
-    FitsKey tmpkey;
+    FitsKey tmpkey = {"", UNKNOWN, "", 0, 0};
 
     hduptr->hdunum = hdunum;
     hduptr->hdutype = hdutype;
@@ -251,6 +251,7 @@ void init_hdu(fitsfile *infits, 	/* input fits file   */
     }
 
     /* Parse the XTENSION/SIMPLEX  keyword */ 
+    tmpkey.kindex = 1;
     fits_parse_card(out, 1, cards[0], tmpkey.kname, 
         &(tmpkey.ktype), tmpkey.kvalue,comm); 
     if( *(tmpkey.kvalue) == ' ') {
@@ -301,7 +302,8 @@ void init_hdu(fitsfile *infits, 	/* input fits file   */
         /* test if this is a tile compressed image, stored in a binary table */
         /* If so then test the extension as binary table rather than an image */
 
-        if (!strncmp(p,"BINTABLE",8) && hduptr->hdutype == IMAGE_HDU) {
+        if (hduptr->hdutype == IMAGE_HDU &&
+            fits_is_compressed_image(infits, &status)) {
           hduptr->hdutype = BINARY_TBL;
           hduptr->istilecompressed = 1;
         } else {
@@ -327,6 +329,7 @@ void init_hdu(fitsfile *infits, 	/* input fits file   */
 
     /* Parse the keywords NAXISn */ 
     for (j = 3; j < 3 + hduptr->naxis; j++){  
+        tmpkey.kindex = 1+j;
         fits_parse_card(out, 1+j,cards[j], tmpkey.kname, 
 	    &(tmpkey.ktype), tmpkey.kvalue,comm); 
         p = tmpkey.kname+5; 
@@ -2441,7 +2444,14 @@ void test_bin_ext(fitsfile *infits, 	/* input fits file   */
         p++;
 	if(!isdigit((int)*p))continue;
 	width = (int)strtol(p,NULL,10);
-	if(repeat%width != 0)  { 
+	if(width == 0)  {
+	    sprintf(errmes,
+	 "TFORM %s of column %d: the substring width must not be zero.",
+	    tform[i], i+1);
+            wrterr(out,errmes,1);
+            continue;
+        }
+	if(repeat%width != 0)  {
 	    sprintf(errmes,
 	 "TFORM %s of column %d: repeat %d is not the multiple of the width %d",
 	    tform[i], i+1, repeat, width);
