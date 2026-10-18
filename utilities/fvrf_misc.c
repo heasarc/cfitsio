@@ -136,7 +136,7 @@ int wrtserr(FILE *out, char* mess, int *status, int severity)
 {
     char* errfmt = "             %.67s\n";
     int i;
-    char tmp[20][80];
+    char tmp[21][FLEN_ERRMSG];	/* 20 messages and a terminating blank */
     int nstack = 0;
 
     if(severity < err_report) { 
@@ -154,6 +154,7 @@ int wrtserr(FILE *out, char* mess, int *status, int severity)
         if(!i && tmp[nstack][0]=='\0') break;
         nstack++;
     }
+    tmp[nstack][0] = '\0';	/* printed by the loops below */
 
     if(out !=NULL) {
         if ((out!=stdout) && (out!=stderr)) { 

@@ -601,6 +601,13 @@ data_end:
                     "Row #%ld, and Column #%d: X vector ", firstn+k, 
                       fits_iter_get_colnum(&(iter_col[i]))); 
                   for (l = 1; l<= repeat[i]; l++) {
+                     /* the column can be any width: stop before errmes
+                        is too full for one more byte, "... " and the
+                        trailing text */
+                     if(strlen(errmes) + 32 > sizeof(errmes)) {
+                        strcat(errmes,"... ");
+                        break;
+                     }
                      sprintf(comm, "0x%02x ", (unsigned char) data[k*repeat[i]+l]);
                      strcat(errmes,comm); 
                   }
@@ -766,8 +773,8 @@ void test_agap(fitsfile *infits, 	/* input fits file   */
     unsigned char *data;
     int *temp;
     unsigned char *p;
-    LONGLONG i, j;
-    int k, m, t;
+    LONGLONG i, j, m, t;
+    int k;
     long firstrow = 1;
     long ntodo;
     long nerr = 0;
@@ -775,7 +782,7 @@ void test_agap(fitsfile *infits, 	/* input fits file   */
     char keyname[9];
     char tform[FLEN_VALUE], comment[256];
     int typecode, decimals;
-    long width, tbcol;
+    long width = 0, tbcol = 0;
     nerr = 0;
 
     if(hduptr->hdutype != ASCII_TBL) return;
@@ -786,6 +793,7 @@ void test_agap(fitsfile *infits, 	/* input fits file   */
     fits_get_rowsize(infits, &irows, &status);
     status = 0; 
     rowlen = hduptr->naxes[0];  
+    if (rowlen <= 0 || nrows <= 0) return;	/* no row data to check */
     data = (unsigned char*)malloc(rowlen*sizeof(unsigned char)*irows);
 
     /* Create a template row with data fields filled with 1s.
@@ -793,6 +801,13 @@ void test_agap(fitsfile *infits, 	/* input fits file   */
        vs. between data columns. */
 
     temp = (int*)malloc(rowlen * sizeof(int));
+    if (data == NULL || temp == NULL) {
+        wrtwrn(out,
+            "Not enough memory to check the ASCII table data.",0);
+        free(data);
+        free(temp);
+        return;
+    }
     for (m = 0; m<rowlen; m++ ) temp[m]=0;
     for (k = 1; k<=ncols; k++ ) { 
 	sprintf(keyname, "TFORM%d",k);
@@ -801,7 +816,9 @@ void test_agap(fitsfile *infits, 	/* input fits file   */
 	    wrtferr(out,"",&status,1);
 	sprintf(keyname, "TBCOL%d",k);
 	fits_read_key_lng(infits, keyname, &tbcol, comment, &status);
-	for (t = tbcol; t < tbcol+width; t++) temp[t-1]=1;
+	/* keep the template writes inside the row */
+	if (tbcol < 1 || tbcol > rowlen) continue;
+	for (t = tbcol; t < tbcol+width && t <= rowlen; t++) temp[t-1]=1;
     }
 
     i = nrows; 
@@ -815,6 +832,7 @@ void test_agap(fitsfile *infits, 	/* input fits file   */
         if(fits_read_tblbytes(infits,firstrow,1, rowlen*ntodo, 
 	    data, &status)){  
 	    wrtferr(out,"",&status,1);
+	    break;	/* the rows were not read: nothing to scan */
         } 
         for (j = 0; j<rowlen*ntodo; j++ ) { 
             if(!isascii(*p))  {
