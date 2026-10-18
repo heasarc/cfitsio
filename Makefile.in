@@ -1216,7 +1216,6 @@ FLEX = flex
 BISON = bison
 
 # Distribution: ==========================================================
-DISTCHECK_CONFIGURE_FLAGS = --enable-reentrant
 EXTRA_DIST = $(F77_WRAPPERS) ${GSIFTP_SRC} \
 	docs licenses \
 	README.md INSTALL.md \
