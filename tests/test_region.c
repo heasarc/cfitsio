@@ -906,6 +906,9 @@ test_fk5_format(void)
 	fits_read_ascii_region(region_file, NULL, &rgn, &status);
 	/* This should succeed but with 0 shapes or fail for empty */
 	/* Behavior depends on implementation */
+	if (rgn) {
+		fits_free_region(rgn);
+	}
 }
 
 static void
@@ -917,6 +920,9 @@ test_fk4_format(void)
 	/* FK4 format line alone */
 	write_region_file("fk4\n");
 	fits_read_ascii_region(region_file, NULL, &rgn, &status);
+	if (rgn) {
+		fits_free_region(rgn);
+	}
 }
 
 static void
@@ -928,6 +934,9 @@ test_icrs_format(void)
 	/* ICRS format line alone */
 	write_region_file("icrs\n");
 	fits_read_ascii_region(region_file, NULL, &rgn, &status);
+	if (rgn) {
+		fits_free_region(rgn);
+	}
 }
 
 static void

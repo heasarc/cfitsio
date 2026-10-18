@@ -189,6 +189,8 @@ test_cleanup_locked_segment(void)
 	call_02(ffinit, &f, "shmem://h2");
 	call_04(ffphps, f, BYTE_IMG, 1, naxes);
 	smem_shutdown();
+	/* Not ffclos: it would flush into the now-detached segment. */
+	free(f);
 }
 
 
@@ -207,6 +209,7 @@ test_cleanup_with_debug(void)
 	call_02(ffinit, &f, "shmem://h5");
 	call_04(ffphps, f, BYTE_IMG, 1, naxes);
 	fail_if(smem_shutdown());
+	free(f);
 }
 
 

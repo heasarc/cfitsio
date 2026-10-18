@@ -211,7 +211,7 @@ test_read_subsection_with_increment(void)
 	int status = 0;
 	long naxes[] = { 6, 6 };
 	double data[36];
-	double result[4];
+	double result[9];  /* 3 x 3 pixels are selected by the increment. */
 	long fpixel[] = { 1, 1 };
 	long lpixel[] = { 5, 5 };
 	long inc[] = { 2, 2 };  /* Skip every other pixel. */
@@ -230,11 +230,15 @@ test_read_subsection_with_increment(void)
 	call_03(ffopen, &f, test_path, READONLY);
 	call_10(ffgsvd, f, 1, 2, naxes, fpixel, lpixel, inc, 0.0, result, &anynull);
 	/* With increment 2, reading [1,3,5] x [1,3,5]. */
-	/* Indices: (0,0)=0, (2,0)=2, (4,0)=4, (0,2)=12, ... */
 	fail_if(result[0] != 0.0);   /* (1,1) -> index 0. */
 	fail_if(result[1] != 2.0);   /* (3,1) -> index 2. */
 	fail_if(result[2] != 4.0);   /* (5,1) -> index 4. */
 	fail_if(result[3] != 12.0);  /* (1,3) -> index 12. */
+	fail_if(result[4] != 14.0);  /* (3,3) -> index 14. */
+	fail_if(result[5] != 16.0);  /* (5,3) -> index 16. */
+	fail_if(result[6] != 24.0);  /* (1,5) -> index 24. */
+	fail_if(result[7] != 26.0);  /* (3,5) -> index 26. */
+	fail_if(result[8] != 28.0);  /* (5,5) -> index 28. */
 	call_01(ffclos, f);
 }
 

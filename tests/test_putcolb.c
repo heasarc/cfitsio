@@ -1349,7 +1349,10 @@ test_ffpextn(void)
 	fitsfile *f;
 	int status = 0;
 	long naxes[] = { 10 };
-	unsigned char data[] = { 0xAA, 0xBB, 0xCC, 0xDD };
+	/* One element per pixel of the naxes[0] == 10 image. */
+	unsigned char data[] = {
+		0xAA, 0xBB, 0xCC, 0xDD, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66
+	};
 	unsigned char result[4];
 	int anynull;
 
