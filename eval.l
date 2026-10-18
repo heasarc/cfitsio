@@ -131,7 +131,7 @@ hexconst        (0x[0123456789aAbBcCdDeEfF]+)
 octconst        (0o[01234567]+)
 integer		[0-9]+
 boolean         (t|f|T|F)
-real		([0-9]*"."[0-9]+)|([0-9]*"."*[0-9]+[eEdD][+-]?[0-9]+)|([0-9]*".")
+real		([0-9]*"."[0-9]+)|([0-9]*"."*[0-9]+[eEdD][+-]?[0-9]+)|([0-9]+".")
 constant        ("#"[a-zA-Z0-9_]+)|("#""$"[^\n]*"$")
 string		([\"][^\"\n]*[\"])|([\'][^\'\n]*[\'])
 variable	([a-zA-Z_][a-zA-Z0-9_]*)|("$"[^$\n]*"$")
@@ -415,7 +415,8 @@ nl		\n
 		  long int constval = 0;
 		  char *p;
 		  for (p = &(yytext[2]); *p; p++) {
-                    int v = (isdigit(*p) ? (*p - '0') : (*p - 'a' + 10));
+                    int c = (unsigned char)*p;
+                    int v = (isdigit(c) ? (c - '0') : (tolower(c) - 'a' + 10));
                     constval = (constval << 4) | v;
 		  }
 		  yylval->lng = constval;

@@ -2396,6 +2396,95 @@ test_ffcrow_double_column_arithmetic(void)
 	call_01(ffclos, f);
 }
 
+/*
+ * Test that 0x hexadecimal literals are parsed case-insensitively.
+ * The lexer used to convert non-digits with (*p - 'a' + 10), which
+ * produced negative digit values for the uppercase forms A-F.
+ */
+static void
+test_ffcrow_hex_constant_case(void)
+{
+	fitsfile *f;
+	int status = 0;
+	double result[1];
+	int anynul;
+	int i;
+	struct { const char *expr; double value; } cases[] = {
+		{ "0x1f",       31.0 },
+		{ "0x1F",       31.0 },
+		{ "0xff",      255.0 },
+		{ "0xFF",      255.0 },
+		{ "0xFf",      255.0 },
+		{ "0xa",        10.0 },
+		{ "0xA",        10.0 },
+		{ "0xabcdef", 11259375.0 },
+		{ "0xABCDEF", 11259375.0 },
+		{ "0x10",       16.0 },
+		{ "0x0",         0.0 }
+	};
+
+	create_test_table(&f);
+
+	for (i = 0; i < (int)(sizeof(cases) / sizeof(cases[0])); i += 1) {
+		call_08(ffcrow, f, TDOUBLE, (char *)cases[i].expr,
+			1, 1, NULL, result, &anynul);
+		fail_if(result[0] != cases[i].value);
+	}
+
+	/* The other radix prefixes must keep working */
+	call_08(ffcrow, f, TDOUBLE, "0b1011", 1, 1, NULL, result, &anynul);
+	fail_if(result[0] != 11.0);
+	call_08(ffcrow, f, TDOUBLE, "0o17", 1, 1, NULL, result, &anynul);
+	fail_if(result[0] != 15.0);
+
+	call_01(ffclos, f);
+}
+
+/*
+ * Test that a lone '.' is not accepted as a floating point constant.
+ * The {real} pattern's third alternative used to allow zero digits
+ * before the decimal point, so "." lexed as the double 0.0.
+ */
+static void
+test_fftexp_bare_dot_rejected(void)
+{
+	fitsfile *f;
+	int status = 0;
+	int datatype, naxis, i;
+	long nelem, naxes[5];
+	double result[1];
+	int anynul;
+	const char *bad[] = { ".", "..", "INTCOL + .", ". + 1", ".e5" };
+	struct { const char *expr; double value; } good[] = {
+		{ "1.",     1.0 },
+		{ "12.",   12.0 },
+		{ ".5",     0.5 },
+		{ "1.5",    1.5 },
+		{ "1.5e3", 1500.0 },
+		{ "1.5E3", 1500.0 },
+		{ "0.",     0.0 }
+	};
+
+	create_test_table(&f);
+
+	for (i = 0; i < (int)(sizeof(bad) / sizeof(bad[0])); i += 1) {
+		status = 0;
+		fits_test_expr(f, (char *)bad[i], 5, &datatype, &nelem,
+			&naxis, naxes, &status);
+		fail_if(status != PARSE_SYNTAX_ERR);
+		ffcmsg();
+	}
+
+	status = 0;
+	for (i = 0; i < (int)(sizeof(good) / sizeof(good[0])); i += 1) {
+		call_08(ffcrow, f, TDOUBLE, (char *)good[i].expr,
+			1, 1, NULL, result, &anynul);
+		fail_if(result[0] != good[i].value);
+	}
+
+	call_01(ffclos, f);
+}
+
 int
 main(void)
 {
@@ -2549,6 +2638,10 @@ main(void)
 
 	/* Double-precision column arithmetic */
 	test_ffcrow_double_column_arithmetic();
+
+	/* Numeric literal lexing */
+	test_ffcrow_hex_constant_case();
+	test_fftexp_bare_dot_rejected();
 
 	remove(test_path);
 

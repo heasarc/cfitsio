@@ -570,7 +570,7 @@ struct yy_trans_info
 static const flex_int16_t yy_accept[174] =
     {   0,
         0,    0,   31,   29,    1,   28,   18,   29,   29,   29,
-       29,   29,   29,   29,   10,    8,    8,   24,   29,   23,
+       29,   29,   29,   29,   29,    8,    8,   24,   29,   23,
        13,   13,   13,   13,    9,   13,   13,   13,   13,   13,
        17,   13,   13,   13,   13,   13,   13,   13,   29,    1,
        22,    0,   12,    0,   11,    0,   13,   20,    0,    0,
@@ -1542,7 +1542,8 @@ YY_RULE_SETUP
 		  long int constval = 0;
 		  char *p;
 		  for (p = &(yytext[2]); *p; p++) {
-                    int v = (isdigit(*p) ? (*p - '0') : (*p - 'a' + 10));
+                    int c = (unsigned char)*p;
+                    int v = (isdigit(c) ? (c - '0') : (tolower(c) - 'a' + 10));
                     constval = (constval << 4) | v;
 		  }
 		  yylval->lng = constval;
@@ -1551,7 +1552,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 430 "eval.l"
+#line 431 "eval.l"
 {
                   yylval->lng = atol(yytext);
 		  return( LONG );
@@ -1559,7 +1560,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 434 "eval.l"
+#line 435 "eval.l"
 {
                   if ((yytext[0] == 't') || (yytext[0] == 'T'))
 		    yylval->log = 1;
@@ -1570,7 +1571,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 441 "eval.l"
+#line 442 "eval.l"
 {
                   yylval->dbl = atof(yytext);
 		  return( DOUBLE );
@@ -1578,7 +1579,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 445 "eval.l"
+#line 446 "eval.l"
 {
                   if(        !fits_strcasecmp(yytext,"#PI") ) {
 		     yylval->dbl = (double)(4) * atan((double)(1));
@@ -1623,7 +1624,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 486 "eval.l"
+#line 487 "eval.l"
 {
                   int len;
                   len = strlen(yytext) - 2;
@@ -1644,7 +1645,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 503 "eval.l"
+#line 504 "eval.l"
 {
 		 int    len,type;
 		 
@@ -1670,7 +1671,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 525 "eval.l"
+#line 526 "eval.l"
 {
                   char *fname;
 		  int len=strlen(yytext);
@@ -1719,86 +1720,86 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 570 "eval.l"
+#line 571 "eval.l"
 { return( INTCAST ); }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 571 "eval.l"
+#line 572 "eval.l"
 { return( FLTCAST ); }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 572 "eval.l"
+#line 573 "eval.l"
 { return( POWER   ); }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 573 "eval.l"
+#line 574 "eval.l"
 { return( NOT     ); }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 574 "eval.l"
+#line 575 "eval.l"
 { return( OR      ); }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 575 "eval.l"
+#line 576 "eval.l"
 { return( AND     ); }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 576 "eval.l"
+#line 577 "eval.l"
 { return( EQ      ); }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 577 "eval.l"
+#line 578 "eval.l"
 { return( NE      ); }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 578 "eval.l"
+#line 579 "eval.l"
 { return( GT      ); }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 579 "eval.l"
+#line 580 "eval.l"
 { return( LT      ); }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 580 "eval.l"
+#line 581 "eval.l"
 { return( GTE     ); }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 581 "eval.l"
+#line 582 "eval.l"
 { return( LTE     ); }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 582 "eval.l"
+#line 583 "eval.l"
 { return( XOR     ); }
 	YY_BREAK
 case 28:
 /* rule 28 can match eol */
 YY_RULE_SETUP
-#line 583 "eval.l"
+#line 584 "eval.l"
 { return( '\n'    ); }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 584 "eval.l"
+#line 585 "eval.l"
 { return( yytext[0] ); }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 585 "eval.l"
+#line 586 "eval.l"
 ECHO;
 	YY_BREAK
-#line 1806 "eval_l.c"
+#line 1807 "eval_l.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2979,7 +2980,7 @@ void yyfree (void * ptr , yyscan_t yyscanner)
 
 #define YYTABLES_NAME "yytables"
 
-#line 585 "eval.l"
+#line 586 "eval.l"
 
 
 int yywrap(yyscan_t scanner)
