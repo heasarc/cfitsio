@@ -125,7 +125,8 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libdir)" \
 am__EXEEXT_1 = tests/test_buffers$(EXEEXT) tests/test_cfileio$(EXEEXT) \
 	tests/test_checksum$(EXEEXT) tests/test_drvrsmem$(EXEEXT) \
 	tests/test_editcol$(EXEEXT) tests/test_edithdu$(EXEEXT) \
-	tests/test_eval$(EXEEXT) tests/test_fileops$(EXEEXT) \
+	tests/test_eval$(EXEEXT) tests/test_fitsverify$(EXEEXT) \
+	tests/test_fileops$(EXEEXT) \
 	tests/test_find_match_delim$(EXEEXT) \
 	tests/test_getcol$(EXEEXT) tests/test_getcolb$(EXEEXT) \
 	tests/test_getcoli$(EXEEXT) tests/test_getcold$(EXEEXT) \
@@ -347,6 +348,11 @@ tests_test_find_match_delim_OBJECTS =  \
 	$(am_tests_test_find_match_delim_OBJECTS)
 tests_test_find_match_delim_LDADD = $(LDADD)
 tests_test_find_match_delim_DEPENDENCIES = libcfitsio.la \
+	$(am__DEPENDENCIES_1)
+am_tests_test_fitsverify_OBJECTS = tests/test_fitsverify.$(OBJEXT)
+tests_test_fitsverify_OBJECTS = $(am_tests_test_fitsverify_OBJECTS)
+tests_test_fitsverify_LDADD = $(LDADD)
+tests_test_fitsverify_DEPENDENCIES = libcfitsio.la \
 	$(am__DEPENDENCIES_1)
 am_tests_test_getcol_OBJECTS = tests/test_getcol.$(OBJEXT)
 tests_test_getcol_OBJECTS = $(am_tests_test_getcol_OBJECTS)
@@ -616,6 +622,7 @@ am__depfiles_remade = ./$(DEPDIR)/libcfitsio_la-buffers.Plo \
 	tests/$(DEPDIR)/test_edithdu.Po tests/$(DEPDIR)/test_eval.Po \
 	tests/$(DEPDIR)/test_fileops.Po \
 	tests/$(DEPDIR)/test_find_match_delim.Po \
+	tests/$(DEPDIR)/test_fitsverify.Po \
 	tests/$(DEPDIR)/test_getcol.Po tests/$(DEPDIR)/test_getcolb.Po \
 	tests/$(DEPDIR)/test_getcold.Po \
 	tests/$(DEPDIR)/test_getcole.Po \
@@ -713,16 +720,16 @@ SOURCES = $(libcfitsio_la_SOURCES) $(libcfitsio_swapproc_la_SOURCES) \
 	$(tests_test_editcol_SOURCES) $(tests_test_edithdu_SOURCES) \
 	$(tests_test_eval_SOURCES) $(tests_test_fileops_SOURCES) \
 	$(tests_test_find_match_delim_SOURCES) \
-	$(tests_test_getcol_SOURCES) $(tests_test_getcolb_SOURCES) \
-	$(tests_test_getcold_SOURCES) $(tests_test_getcole_SOURCES) \
-	$(tests_test_getcoli_SOURCES) $(tests_test_getcolj_SOURCES) \
-	$(tests_test_getcolk_SOURCES) $(tests_test_getcoll_SOURCES) \
-	$(tests_test_getcols_SOURCES) $(tests_test_getcolsb_SOURCES) \
-	$(tests_test_getcolui_SOURCES) $(tests_test_getcoluj_SOURCES) \
-	$(tests_test_getcoluk_SOURCES) $(tests_test_getkey_SOURCES) \
-	$(tests_test_group_SOURCES) $(tests_test_grparser_SOURCES) \
-	$(tests_test_hcompress_SOURCES) $(tests_test_histo_SOURCES) \
-	$(tests_test_imcompress_SOURCES) \
+	$(tests_test_fitsverify_SOURCES) $(tests_test_getcol_SOURCES) \
+	$(tests_test_getcolb_SOURCES) $(tests_test_getcold_SOURCES) \
+	$(tests_test_getcole_SOURCES) $(tests_test_getcoli_SOURCES) \
+	$(tests_test_getcolj_SOURCES) $(tests_test_getcolk_SOURCES) \
+	$(tests_test_getcoll_SOURCES) $(tests_test_getcols_SOURCES) \
+	$(tests_test_getcolsb_SOURCES) $(tests_test_getcolui_SOURCES) \
+	$(tests_test_getcoluj_SOURCES) $(tests_test_getcoluk_SOURCES) \
+	$(tests_test_getkey_SOURCES) $(tests_test_group_SOURCES) \
+	$(tests_test_grparser_SOURCES) $(tests_test_hcompress_SOURCES) \
+	$(tests_test_histo_SOURCES) $(tests_test_imcompress_SOURCES) \
 	$(tests_test_iraffits_SOURCES) $(tests_test_modkey_SOURCES) \
 	$(tests_test_pliocomp_SOURCES) $(tests_test_putcol_SOURCES) \
 	$(tests_test_putcolb_SOURCES) $(tests_test_putcold_SOURCES) \
@@ -748,16 +755,16 @@ DIST_SOURCES = $(am__libcfitsio_la_SOURCES_DIST) \
 	$(tests_test_edithdu_SOURCES) $(tests_test_eval_SOURCES) \
 	$(tests_test_fileops_SOURCES) \
 	$(tests_test_find_match_delim_SOURCES) \
-	$(tests_test_getcol_SOURCES) $(tests_test_getcolb_SOURCES) \
-	$(tests_test_getcold_SOURCES) $(tests_test_getcole_SOURCES) \
-	$(tests_test_getcoli_SOURCES) $(tests_test_getcolj_SOURCES) \
-	$(tests_test_getcolk_SOURCES) $(tests_test_getcoll_SOURCES) \
-	$(tests_test_getcols_SOURCES) $(tests_test_getcolsb_SOURCES) \
-	$(tests_test_getcolui_SOURCES) $(tests_test_getcoluj_SOURCES) \
-	$(tests_test_getcoluk_SOURCES) $(tests_test_getkey_SOURCES) \
-	$(tests_test_group_SOURCES) $(tests_test_grparser_SOURCES) \
-	$(tests_test_hcompress_SOURCES) $(tests_test_histo_SOURCES) \
-	$(tests_test_imcompress_SOURCES) \
+	$(tests_test_fitsverify_SOURCES) $(tests_test_getcol_SOURCES) \
+	$(tests_test_getcolb_SOURCES) $(tests_test_getcold_SOURCES) \
+	$(tests_test_getcole_SOURCES) $(tests_test_getcoli_SOURCES) \
+	$(tests_test_getcolj_SOURCES) $(tests_test_getcolk_SOURCES) \
+	$(tests_test_getcoll_SOURCES) $(tests_test_getcols_SOURCES) \
+	$(tests_test_getcolsb_SOURCES) $(tests_test_getcolui_SOURCES) \
+	$(tests_test_getcoluj_SOURCES) $(tests_test_getcoluk_SOURCES) \
+	$(tests_test_getkey_SOURCES) $(tests_test_group_SOURCES) \
+	$(tests_test_grparser_SOURCES) $(tests_test_hcompress_SOURCES) \
+	$(tests_test_histo_SOURCES) $(tests_test_imcompress_SOURCES) \
 	$(tests_test_iraffits_SOURCES) $(tests_test_modkey_SOURCES) \
 	$(tests_test_pliocomp_SOURCES) $(tests_test_putcol_SOURCES) \
 	$(tests_test_putcolb_SOURCES) $(tests_test_putcold_SOURCES) \
@@ -1244,6 +1251,7 @@ CLEANFILES = tg123x.kfj include1.tpl include2.tpl test_buffers.fits \
 	test_cfileio.fits test_checksum.fits test_delete.fits \
 	test_editcol.fits test_editcol2.fits test_edithdu.fits \
 	test_edithdu2.fits test_edithdu3.fits test_eval.fits \
+	test_fitsverify_report.txt test_fitsverify.fits \
 	test_getcol.fits test_getcolb.fits test_getcold.fits \
 	test_getcole.fits test_getcoli.fits test_getcolj.fits \
 	test_getcolk.fits test_getcoll.fits test_getcols.fits \
@@ -1271,6 +1279,7 @@ UNIT_TESTS = \
 	tests/test_editcol \
 	tests/test_edithdu \
 	tests/test_eval \
+	tests/test_fitsverify \
 	tests/test_fileops \
 	tests/test_find_match_delim \
 	tests/test_getcol \
@@ -1325,6 +1334,7 @@ tests_test_drvrsmem_SOURCES = tests/test_drvrsmem.c
 tests_test_editcol_SOURCES = tests/test_editcol.c
 tests_test_edithdu_SOURCES = tests/test_edithdu.c
 tests_test_eval_SOURCES = tests/test_eval.c
+tests_test_fitsverify_SOURCES = tests/test_fitsverify.c
 tests_test_fileops_SOURCES = tests/test_fileops.c
 tests_test_find_match_delim_SOURCES = tests/test_find_match_delim.c
 tests_test_getcol_SOURCES = tests/test_getcol.c
@@ -1662,6 +1672,12 @@ tests/test_find_match_delim.$(OBJEXT): tests/$(am__dirstamp) \
 tests/test_find_match_delim$(EXEEXT): $(tests_test_find_match_delim_OBJECTS) $(tests_test_find_match_delim_DEPENDENCIES) $(EXTRA_tests_test_find_match_delim_DEPENDENCIES) tests/$(am__dirstamp)
 	@rm -f tests/test_find_match_delim$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(tests_test_find_match_delim_OBJECTS) $(tests_test_find_match_delim_LDADD) $(LIBS)
+tests/test_fitsverify.$(OBJEXT): tests/$(am__dirstamp) \
+	tests/$(DEPDIR)/$(am__dirstamp)
+
+tests/test_fitsverify$(EXEEXT): $(tests_test_fitsverify_OBJECTS) $(tests_test_fitsverify_DEPENDENCIES) $(EXTRA_tests_test_fitsverify_DEPENDENCIES) tests/$(am__dirstamp)
+	@rm -f tests/test_fitsverify$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_test_fitsverify_OBJECTS) $(tests_test_fitsverify_LDADD) $(LIBS)
 tests/test_getcol.$(OBJEXT): tests/$(am__dirstamp) \
 	tests/$(DEPDIR)/$(am__dirstamp)
 
@@ -2010,6 +2026,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_eval.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_fileops.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_find_match_delim.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_fitsverify.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_getcol.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_getcolb.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_getcold.Po@am__quote@ # am--include-marker
@@ -2990,6 +3007,13 @@ tests/test_eval.log: tests/test_eval$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+tests/test_fitsverify.log: tests/test_fitsverify$(EXEEXT)
+	@p='tests/test_fitsverify$(EXEEXT)'; \
+	b='tests/test_fitsverify'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 tests/test_fileops.log: tests/test_fileops$(EXEEXT)
 	@p='tests/test_fileops$(EXEEXT)'; \
 	b='tests/test_fileops'; \
@@ -3646,6 +3670,7 @@ distclean: distclean-am
 	-rm -f tests/$(DEPDIR)/test_eval.Po
 	-rm -f tests/$(DEPDIR)/test_fileops.Po
 	-rm -f tests/$(DEPDIR)/test_find_match_delim.Po
+	-rm -f tests/$(DEPDIR)/test_fitsverify.Po
 	-rm -f tests/$(DEPDIR)/test_getcol.Po
 	-rm -f tests/$(DEPDIR)/test_getcolb.Po
 	-rm -f tests/$(DEPDIR)/test_getcold.Po
@@ -3830,6 +3855,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f tests/$(DEPDIR)/test_eval.Po
 	-rm -f tests/$(DEPDIR)/test_fileops.Po
 	-rm -f tests/$(DEPDIR)/test_find_match_delim.Po
+	-rm -f tests/$(DEPDIR)/test_fitsverify.Po
 	-rm -f tests/$(DEPDIR)/test_getcol.Po
 	-rm -f tests/$(DEPDIR)/test_getcolb.Po
 	-rm -f tests/$(DEPDIR)/test_getcold.Po

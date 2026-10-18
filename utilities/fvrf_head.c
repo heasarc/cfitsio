@@ -2441,7 +2441,14 @@ void test_bin_ext(fitsfile *infits, 	/* input fits file   */
         p++;
 	if(!isdigit((int)*p))continue;
 	width = (int)strtol(p,NULL,10);
-	if(repeat%width != 0)  { 
+	if(width == 0)  {
+	    sprintf(errmes,
+	 "TFORM %s of column %d: the substring width must not be zero.",
+	    tform[i], i+1);
+            wrterr(out,errmes,1);
+            continue;
+        }
+	if(repeat%width != 0)  {
 	    sprintf(errmes,
 	 "TFORM %s of column %d: repeat %d is not the multiple of the width %d",
 	    tform[i], i+1, repeat, width);
