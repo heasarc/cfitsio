@@ -601,6 +601,13 @@ data_end:
                     "Row #%ld, and Column #%d: X vector ", firstn+k, 
                       fits_iter_get_colnum(&(iter_col[i]))); 
                   for (l = 1; l<= repeat[i]; l++) {
+                     /* the column can be any width: stop before errmes
+                        is too full for one more byte, "... " and the
+                        trailing text */
+                     if(strlen(errmes) + 32 > sizeof(errmes)) {
+                        strcat(errmes,"... ");
+                        break;
+                     }
                      sprintf(comm, "0x%02x ", (unsigned char) data[k*repeat[i]+l]);
                      strcat(errmes,comm); 
                   }
