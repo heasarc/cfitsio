@@ -11,6 +11,7 @@
 
 #define test_path "test_imcompress.fits"
 #define test_path2 "test_imcompress2.fits"
+#define test_path3 "test_imcompress3.fits"
 
 /*
  * Helper to create a simple test image
@@ -557,6 +558,152 @@ test_dither_seed(void)
 	fail_if(status != 0);
 }
 
+/*
+ * The variable-length string in a given row of the table built below
+ */
+static void
+vla_string(char *buf, size_t size, long row)
+{
+	int k, n = (int)(row % 15);
+	int p = snprintf(buf, size, "obj_");
+
+	for (k = 0; k < n; k += 1) {
+		buf[p] = 'x';
+		p += 1;
+	}
+	buf[p] = '\0';
+}
+
+/*
+ * Round trip a table containing variable-length array columns through
+ * fits_compress_table / fits_uncompress_table (what "fpack -table" does).
+ *
+ * A variable-length *string* column ('1PA') used to be sized as if its field
+ * held one byte per row rather than an 8 byte 'P' descriptor, so
+ * fits_uncompress_table reserved too little room for the column and gunzipped
+ * past the end of its buffer, corrupting the heap - see heasarc/cfitsio
+ * issue #134.
+ */
+static void
+test_compress_table_vla(void)
+{
+	fitsfile *in, *out, *back;
+	int status = 0, anynull, ztable = 0;
+	long nrows = 600, nback = 0, i;
+	char *ttype[] = { "vstr", "vflt", "vint", "fixstr" };
+	char *tform[] = { "1PA", "1PE", "1PJ", "8A" };
+	char *tunit[] = { "", "", "", "" };
+
+	/* Build the uncompressed table.  It has to be larger than 5760 bytes,
+	   otherwise fits_compress_table just copies it verbatim. */
+	fits_create_file(&in, "!" test_path, &status);
+	fail_if(status != 0);
+	fits_create_tbl(in, BINARY_TBL, 0, 4, ttype, tform, tunit, "DATA",
+		&status);
+	fail_if(status != 0);
+
+	for (i = 0; i < nrows; i += 1) {
+		char str[64], fixed[16], *cell[1];
+		float f[16];
+		int jv[16];
+		int k, n = 1 + (int)(i % 12);
+
+		vla_string(str, sizeof str, i);
+		cell[0] = str;
+		fits_write_col(in, TSTRING, 1, i + 1, 1, 1, cell, &status);
+
+		for (k = 0; k < n; k += 1) {
+			f[k] = (float)(i + k) * 1.5f;
+			jv[k] = (int)(i * 100 + k);
+		}
+		fits_write_col(in, TFLOAT, 2, i + 1, 1, n, f, &status);
+		fits_write_col(in, TINT, 3, i + 1, 1, n, jv, &status);
+
+		snprintf(fixed, sizeof fixed, "row%04ld", i);
+		cell[0] = fixed;
+		fits_write_col(in, TSTRING, 4, i + 1, 1, 1, cell, &status);
+	}
+	fail_if(status != 0);
+	fits_close_file(in, &status);
+	fail_if(status != 0);
+
+	/* Compress it */
+	fits_open_file(&in, test_path, READONLY, &status);
+	fail_if(status != 0);
+	fits_movabs_hdu(in, 2, NULL, &status);
+	fail_if(status != 0);
+	fits_create_file(&out, "!" test_path2, &status);
+	fail_if(status != 0);
+	fits_compress_table(in, out, &status);
+	fail_if(status != 0);
+	fits_close_file(in, &status);
+	fits_close_file(out, &status);
+	fail_if(status != 0);
+
+	/* The table must really have been compressed, or this test would
+	   silently exercise nothing */
+	fits_open_file(&out, test_path2, READONLY, &status);
+	fail_if(status != 0);
+	fits_movabs_hdu(out, 2, NULL, &status);
+	fail_if(status != 0);
+	fits_read_key(out, TLOGICAL, "ZTABLE", &ztable, NULL, &status);
+	fail_if(status != 0);
+	fail_if(!ztable);
+
+	/* Uncompress it again */
+	fits_create_file(&back, "!" test_path3, &status);
+	fail_if(status != 0);
+	fits_uncompress_table(out, back, &status);
+	fail_if(status != 0);
+	fits_close_file(out, &status);
+	fits_close_file(back, &status);
+	fail_if(status != 0);
+
+	/* Every value must have survived the round trip */
+	fits_open_file(&back, test_path3, READONLY, &status);
+	fail_if(status != 0);
+	fits_movabs_hdu(back, 2, NULL, &status);
+	fail_if(status != 0);
+	fits_get_num_rows(back, &nback, &status);
+	fail_if(status != 0);
+	fail_if(nback != nrows);
+
+	for (i = 0; i < nrows; i += 1) {
+		char expect[64], got[64], *cell[1];
+		float f[16];
+		int jv[16];
+		long repeat, offset;
+		int k, n = 1 + (int)(i % 12);
+
+		cell[0] = got;
+
+		vla_string(expect, sizeof expect, i);
+		fits_read_col(back, TSTRING, 1, i + 1, 1, 1, "", cell,
+			&anynull, &status);
+		fail_if(strcmp(got, expect) != 0);
+
+		fits_read_descript(back, 2, i + 1, &repeat, &offset, &status);
+		fail_if(repeat != n);
+		fits_read_col(back, TFLOAT, 2, i + 1, 1, n, NULL, f, &anynull,
+			&status);
+		fits_read_col(back, TINT, 3, i + 1, 1, n, NULL, jv, &anynull,
+			&status);
+		for (k = 0; k < n; k += 1) {
+			fail_if(f[k] != (float)(i + k) * 1.5f);
+			fail_if(jv[k] != (int)(i * 100 + k));
+		}
+
+		snprintf(expect, sizeof expect, "row%04ld", i);
+		fits_read_col(back, TSTRING, 4, i + 1, 1, 1, "", cell,
+			&anynull, &status);
+		fail_if(strcmp(got, expect) != 0);
+	}
+	fail_if(status != 0);
+
+	fits_close_file(back, &status);
+	fail_if(status != 0);
+}
+
 int
 main(void)
 {
@@ -570,10 +717,12 @@ main(void)
 	test_hcompress_compress();
 	test_is_compressed_uncompressed();
 	test_compress_byte_image();
+	test_compress_table_vla();
 	test_dither_seed();
 
 	remove(test_path);
 	remove(test_path2);
+	remove(test_path3);
 
 	return 0;
 }
