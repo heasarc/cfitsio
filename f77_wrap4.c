@@ -52,7 +52,7 @@ typedef struct {
    void (*Fwork_fn)(PLONG_cfTYPE *total_n, ...);
 } FtnUserData;
 
-/*        Declare protoypes to make C++ happy       */
+/*        Declare prototypes to make C++ happy       */
 int Cwork_fn(long, long, long, long, int, iteratorCol *, void *);
 void Cffiter( int n_cols, int *units, int *colnum, char *colname[], 
 	      int *datatype, int *iotype,

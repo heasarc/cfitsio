@@ -162,7 +162,7 @@ SERVICES PROVIDED HEREUNDER."
 #define LONGLONG_MIN LONG_LONG_MIN
 
 #elif defined(__LONG_LONG_MAX__)
-/* Mac OS X & CYGWIN defintion */
+/* Mac OS X & CYGWIN definition */
 #define LONGLONG_MAX __LONG_LONG_MAX__
 #define LONGLONG_MIN (-LONGLONG_MAX -1LL)
 
@@ -376,8 +376,8 @@ typedef struct      /* structure used to store basic FITS file information */
     int maxhdu;       /* highest numbered HDU known to exist in the file */
     int MAXHDU;       /* dynamically allocated dimension of headstart array */
     LONGLONG *headstart; /* byte offset in file to start of each HDU */
-    LONGLONG headend;   /* byte offest in file to end of the current HDU header */
-    LONGLONG ENDpos;    /* byte offest to where the END keyword was last written */
+    LONGLONG headend;   /* byte offset in file to end of the current HDU header */
+    LONGLONG ENDpos;    /* byte offset to where the END keyword was last written */
     LONGLONG nextkey;   /* byte offset in file to beginning of next keyword */
     LONGLONG datastart; /* byte offset in file to start of the current data unit */
     int imgdim;         /* dimension of image; cached for fast access */
@@ -677,10 +677,10 @@ int CFITS_API fits_read_wcstab(fitsfile *fptr, int nwtb, wtbarr *wtb, int *statu
 
 #define BAD_I2C           401  /* bad int to formatted string conversion */
 #define BAD_F2C           402  /* bad float to formatted string conversion */
-#define BAD_INTKEY        403  /* can't interprete keyword value as integer */
-#define BAD_LOGICALKEY    404  /* can't interprete keyword value as logical */
-#define BAD_FLOATKEY      405  /* can't interprete keyword value as float */
-#define BAD_DOUBLEKEY     406  /* can't interprete keyword value as double */
+#define BAD_INTKEY        403  /* can't interpret keyword value as integer */
+#define BAD_LOGICALKEY    404  /* can't interpret keyword value as logical */
+#define BAD_FLOATKEY      405  /* can't interpret keyword value as float */
+#define BAD_DOUBLEKEY     406  /* can't interpret keyword value as double */
 #define BAD_C2I           407  /* bad formatted string to int conversion */
 #define BAD_C2F           408  /* bad formatted string to float conversion */
 #define BAD_C2D           409  /* bad formatted string to double conversion */

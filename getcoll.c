@@ -357,7 +357,7 @@ int ffgcxui(fitsfile *fptr,   /* I - FITS file pointer                       */
             int  *status)     /* IO - error status                           */
 /*
   Read a consecutive string of bits from an 'X' or 'B' column and
-  interprete them as an unsigned integer.  The number of bits must be
+  interpret them as an unsigned integer.  The number of bits must be
   less than or equal to 16 or the total number of bits in the column, 
   which ever is less.
 */
@@ -494,7 +494,7 @@ int ffgcxuk(fitsfile *fptr,   /* I - FITS file pointer                       */
             int  *status)     /* IO - error status                           */
 /*
   Read a consecutive string of bits from an 'X' or 'B' column and
-  interprete them as an unsigned integer.  The number of bits must be
+  interpret them as an unsigned integer.  The number of bits must be
   less than or equal to 32 or the total number of bits in the column, 
   which ever is less.
 */

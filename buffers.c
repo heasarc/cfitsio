@@ -239,7 +239,7 @@ int ffpbytoff(fitsfile *fptr, /* I - FITS file pointer                   */
       }
       else
       {
-        ioptr  += (offset + nwrite);  /* increment IO bufer pointer */
+        ioptr  += (offset + nwrite);  /* increment IO buffer pointer */
         nspace -= (offset + nwrite);
       }
 
@@ -422,7 +422,7 @@ int ffgbytoff(fitsfile *fptr, /* I - FITS file pointer                   */
       }
       else
       {
-        ioptr  += (offset + nread);  /* increment IO bufer pointer */
+        ioptr  += (offset + nread);  /* increment IO buffer pointer */
         nspace -= (offset + nread);
       }
 
@@ -737,7 +737,7 @@ ffseek(Fptr, filepos);
     return(*status);       
 }
 /*--------------------------------------------------------------------------*/
-int ffgrsz( fitsfile *fptr, /* I - FITS file pionter                        */
+int ffgrsz( fitsfile *fptr, /* I - FITS file pointer                        */
             long *ndata,    /* O - optimal amount of data to access         */
             int  *status)   /* IO - error status                            */
 /*
@@ -1172,7 +1172,7 @@ int ffptbb(fitsfile *fptr,        /* I - FITS file pointer                 */
         }
         else
         {
-            /* manally update heap starting address */
+            /* manually update heap starting address */
             (fptr->Fptr)->heapstart += 
             ((LONGLONG)(endrow - (fptr->Fptr)->numrows) * 
                     (fptr->Fptr)->rowlength );

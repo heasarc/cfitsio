@@ -160,7 +160,7 @@ static char *f2cstrv2(char *fstr, char* cstr, int felem_len, int celem_len,
 
 /************************************************************************
    The following definitions redefine the BYTE data type to be
-   interpretted as a character*1 string instead of an integer*1 which
+   interpreted as a character*1 string instead of an integer*1 which
    is not supported by all compilers.
 *************************************************************************/
 

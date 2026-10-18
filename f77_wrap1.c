@@ -88,7 +88,7 @@ FCALLSCSUB2(Cfffiou,FTFIOU,ftfiou,INT,PINT)
 int CFITS2Unit( fitsfile *fptr )
      /* Utility routine to convert a fitspointer to a Fortran unit number */
      /* for use when a C program is calling a Fortran routine which could */
-     /* in turn call CFITSIO... Modelled after code by Ning Gan.          */
+     /* in turn call CFITSIO... Modeled after code by Ning Gan.          */
 {
    static fitsfile *last_fptr = (fitsfile *)NULL; /* Remember last fptr */
    static int last_unit = 0;                      /* Remember last unit */

@@ -303,7 +303,7 @@ int ffpclx( fitsfile *fptr,  /* I - FITS file pointer                       */
         repeat = fbit + nbit -1;
 
         /* write the number of elements and the starting offset.    */
-        /* Note: ffgcprll previous wrote the descripter, but with the */
+        /* Note: ffgcprll previous wrote the descriptor, but with the */
         /* wrong repeat value  (gave bytes instead of bits).        */
         /* Make sure to not change the current heap offset value!  */
 

@@ -648,7 +648,7 @@ int file_size(int handle, LONGLONG *filesize)
 /* call the VISUAL C++ version of the routines which support */
 /*  Large Files (> 2GB) if they are supported (since VC 8.0)  */
 
-    position1 = _ftelli64(diskfile);   /* save current postion */
+    position1 = _ftelli64(diskfile);   /* save current position */
     if (position1 < 0)
         return(SEEK_ERROR);
 
@@ -667,7 +667,7 @@ int file_size(int handle, LONGLONG *filesize)
 /* call the newer ftello and fseeko routines , which support */
 /*  Large Files (> 2GB) if they are supported.  */
 
-    position1 = ftello(diskfile);   /* save current postion */
+    position1 = ftello(diskfile);   /* save current position */
     if (position1 < 0)
         return(SEEK_ERROR);
 
@@ -683,7 +683,7 @@ int file_size(int handle, LONGLONG *filesize)
 
 #else
 
-    position1 = ftell(diskfile);   /* save current postion */
+    position1 = ftell(diskfile);   /* save current position */
     if (position1 < 0)
         return(SEEK_ERROR);
 
@@ -927,7 +927,7 @@ int file_compress_open(char *filename, int rwmode, int *hdl)
 int file_is_compressed(char *filename) /* I - FITS file name          */
 /*
   Test if the disk file is compressed.  Returns 1 if compressed, 0 if not.
-  This may modify the filename string by appending a compression suffex.
+  This may modify the filename string by appending a compression suffix.
 */
 {
     FILE *diskfile;

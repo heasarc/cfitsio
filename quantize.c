@@ -156,7 +156,7 @@ If the function value is zero, the data were not copied to idata.
 	    /* negative value represents the absolute quantization level */
 	    delta = -qlevel;
 
-	    /* only nned to calculate the min and max values */
+	    /* only need to calculate the min and max values */
 	    FnNoise3_float(fdata, nxpix, nypix, nullcheck, in_null_value, &ngood,
 	        &minval, &maxval, 0, &status);      
  	}
@@ -345,7 +345,7 @@ If the function value is zero, the data were not copied to idata.
 	    /* negative value represents the absolute quantization level */
 	    delta = -qlevel;
 
-	    /* only nned to calculate the min and max values */
+	    /* only need to calculate the min and max values */
 	    FnNoise3_double(fdata, nxpix, nypix, nullcheck, in_null_value, &ngood,
 	        &minval, &maxval, 0, &status);      
  	}

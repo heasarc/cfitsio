@@ -528,7 +528,7 @@ static void signal_handler(int sig) {
     longjmp(env,sig);
     
   default: {
-      /* Hmm, shouldn't have happend */
+      /* Hmm, shouldn't have happened */
       exit(sig);
     }
   }

@@ -316,7 +316,7 @@ only C calling FORTRAN subroutines will work using K&R style.*/
      /* BUT we usually use UN for C macro to FORTRAN routines, so use LN here,*/
      /* because VAX/VMS doesn't do recursive macros.                          */
 #define orig_fcallsc(UN,LN)    UN
-#else      /* HP-UX without +ppu or IBMR2 without -qextname. NOT reccomended. */
+#else      /* HP-UX without +ppu or IBMR2 without -qextname. NOT recommended. */
 #define CFC_(UN,LN)            LN           /* Lowercase FORTRAN symbols.     */
 #define orig_fcallsc(UN,LN)    CFC_(UN,LN)
 #endif /*  vmsFortran */

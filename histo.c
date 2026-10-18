@@ -542,7 +542,7 @@ int ffbinre(char **ptr,
               ffpmsg("bin expression syntax error (ffbinr)");
               return(*status=PARSE_SYNTAX_ERR);
 	  }
-	  *ptr = *exprend; /* Advance pointer past delimeter */
+	  *ptr = *exprend; /* Advance pointer past delimiter */
 	}
         while (**ptr == ' ')  (*ptr)++; /* skip over more possible blanks */
 	
@@ -693,7 +693,7 @@ int ffhist2e(fitsfile **fptr,  /* IO - pointer to table with X and Y cols;    */
            int imagetype,    /* I - datatype for image: TINT, TSHORT, etc   */
            int naxis,        /* I - number of axes in the histogram image   */
            char colname[4][FLEN_VALUE],   /* I - column names               */
-	   char *colexpr[4], /* I - optionally, expression intead of colum  */
+	   char *colexpr[4], /* I - optionally, expression instead of column  */
            double *minin,     /* I - minimum histogram value, for each axis */
            double *maxin,     /* I - maximum histogram value, for each axis */
            double *binsizein, /* I - bin size along each axis               */
@@ -708,7 +708,7 @@ int ffhist2e(fitsfile **fptr,  /* IO - pointer to table with X and Y cols;    */
                              /* rows in the table).  If the element is true */
                              /* then the corresponding row of the table will*/
                              /* be included in the histogram, otherwise the */
-                             /* row will be skipped.  Ingnored if *selectrow*/
+                             /* row will be skipped.  Ignored if *selectrow*/
                              /* is equal to NULL.                           */
            int *status)
 {
@@ -750,7 +750,7 @@ int ffhist2e(fitsfile **fptr,  /* IO - pointer to table with X and Y cols;    */
     }
     
     /*    Calculate the binning parameters:    */
-    /*   columm numbers, axes length, min values,  max values, and binsizes.  */
+    /*   column numbers, axes length, min values,  max values, and binsizes.  */
 
     if (fits_calc_binningde(
       *fptr, naxis, colname, colexpr, 
@@ -913,7 +913,7 @@ int ffhist2(fitsfile **fptr,  /* IO - pointer to table with X and Y cols;    */
                              /* rows in the table).  If the element is true */
                              /* then the corresponding row of the table will*/
                              /* be included in the histogram, otherwise the */
-                             /* row will be skipped.  Ingnored if *selectrow*/
+                             /* row will be skipped.  Ignored if *selectrow*/
                              /* is equal to NULL.                           */
            int *status)
 {
@@ -948,7 +948,7 @@ fitsfile *ffhist3(fitsfile *fptr, /* I - ptr to table with X and Y cols*/
                              /* rows in the table).  If the element is true */
                              /* then the corresponding row of the table will*/
                              /* be included in the histogram, otherwise the */
-                             /* row will be skipped.  Ingnored if *selectrow*/
+                             /* row will be skipped.  Ignored if *selectrow*/
                              /* is equal to NULL.                           */
            int *status)
 {
@@ -987,7 +987,7 @@ fitsfile *ffhist3(fitsfile *fptr, /* I - ptr to table with X and Y cols*/
     }
     
     /*    Calculate the binning parameters:    */
-    /*   columm numbers, axes length, min values,  max values, and binsizes.  */
+    /*   column numbers, axes length, min values,  max values, and binsizes.  */
 
     if (fits_calc_binningd(
       fptr, naxis, colname, minin, maxin, binsizein, minname, maxname, binname,
@@ -1089,7 +1089,7 @@ int ffhist(fitsfile **fptr,  /* IO - pointer to table with X and Y cols;    */
                              /* rows in the table).  If the element is true */
                              /* then the corresponding row of the table will*/
                              /* be included in the histogram, otherwise the */
-                             /* row will be skipped.  Ingnored if *selectrow*/
+                             /* row will be skipped.  Ignored if *selectrow*/
                              /* is equal to NULL.                           */
            int *status)
 {
@@ -1928,7 +1928,7 @@ int fits_calc_binningde(
 	  }
 	
 	/* ================================================================ */
-	/* check tha column is not a vector or a string                     */
+	/* check the column is not a vector or a string                     */
 	
 	/* get the datatype of the column */
 	fits_get_eqcoltype(fptr, colnum[ii], &datatype,
@@ -2499,7 +2499,7 @@ int fits_make_hist(fitsfile *fptr, /* IO - pointer to table with X and Y cols; *
                              /* rows in the table).  If the element is true */
                              /* then the corresponding row of the table will*/
                              /* be included in the histogram, otherwise the */
-                             /* row will be skipped.  Ingnored if *selectrow*/
+                             /* row will be skipped.  Ignored if *selectrow*/
                              /* is equal to NULL.                           */
     int *status)
 {		  
@@ -2548,7 +2548,7 @@ int fits_make_histde(fitsfile *fptr, /* IO - pointer to table with X and Y cols;
                              /* rows in the table).  If the element is true */
                              /* then the corresponding row of the table will*/
                              /* be included in the histogram, otherwise the */
-                             /* row will be skipped.  Ingnored if *selectrow*/
+                             /* row will be skipped.  Ignored if *selectrow*/
                              /* is equal to NULL.                           */
     int *status)
 {		  
@@ -2870,7 +2870,7 @@ int fits_make_histd(fitsfile *fptr, /* IO - pointer to table with X and Y cols; 
                              /* rows in the table).  If the element is true */
                              /* then the corresponding row of the table will*/
                              /* be included in the histogram, otherwise the */
-                             /* row will be skipped.  Ingnored if *selectrow*/
+                             /* row will be skipped.  Ignored if *selectrow*/
                              /* is equal to NULL.                           */
     int *status)
 {		  
@@ -3029,7 +3029,7 @@ int fits_get_expr_minmax(fitsfile *fptr, char *expr, double *datamin,
    
    if( ffiter( lParse.nCols, lParse.colData, 0, 0,
 	       histo_minmax_expr_workfn, (void*)&minmaxWorkFn, status ) == -1 )
-     *status = 0;  /* -1 indicates exitted without error before end... OK */
+     *status = 0;  /* -1 indicates exited without error before end... OK */
 
    if (datamin) *datamin = minmaxWorkFn.datamin;
    if (datamax) *datamax = minmaxWorkFn.datamax;
@@ -3042,7 +3042,7 @@ int fits_get_expr_minmax(fitsfile *fptr, char *expr, double *datamin,
 int ffwritehisto(long totaln, long pixoffset, long firstn, long nvalues,
 		 int narrays, iteratorCol *imagepars, void *userPointer)
 /*
-   Interator work function that writes out the histogram.
+   Iterator work function that writes out the histogram.
    The histogram values are calculated by another work function, ffcalchisto.
    This work function only gets called once, and totaln = nvalues.
 */
@@ -3076,7 +3076,7 @@ int ffwritehisto(long totaln, long pixoffset, long firstn, long nvalues,
     /* call iterator function to calc the histogram pixel values */
 
     /* must lock this call in multithreaded environoments because */
-    /* the ffcalchist work routine uses static vaiables that would */
+    /* the ffcalchist work routine uses static variables that would */
     /* get clobbered if multiple threads were running at the same time */
     fits_iterate_data(histData->numIterCols, histData->iterCols,
 		      offset, rows_per_loop,
@@ -3088,7 +3088,7 @@ int ffwritehisto(long totaln, long pixoffset, long firstn, long nvalues,
 int ffcalchist(long totalrows, long offset, long firstrow, long nrows,
              int ncols, iteratorCol *colpars, void *userPointer)
 /*
-   Interator work function that calculates values for the 2D histogram.
+   Iterator work function that calculates values for the 2D histogram.
 */
 {
     long ii, ipix, iaxisbin;

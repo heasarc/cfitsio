@@ -230,7 +230,7 @@ int ffirow(fitsfile *fptr,  /* I - FITS file pointer                        */
            LONGLONG nrows,      /* I - number of rows to insert                 */
            int *status)     /* IO - error status                            */
 /*
- insert NROWS blank rows immediated after row firstrow (1 = first row).
+ insert NROWS blank rows immediately after row firstrow (1 = first row).
  Set firstrow = 0 to insert space at the beginning of the table.
 */
 {
@@ -2322,7 +2322,7 @@ int ffcprw(fitsfile *infptr,    /* I - FITS file pointer to input file  */
 		{
 		   if (nVarBytes > nVarAllocBytes)
 		   {
-		     /* Grow the copy buffer to accomodate the new maximum size. 
+		     /* Grow the copy buffer to accommodate the new maximum size. 
 			Note it is safe to call realloc() with null input pointer, 
 			which is equivalent to malloc(). */
 		     unsigned char *varColBuff1 = (unsigned char *) realloc(varColBuff, nVarBytes);
@@ -2556,7 +2556,7 @@ int ffcpsr(fitsfile *infptr,    /* I - FITS file pointer to input file  */
 		{
 		   if (nVarBytes > nVarAllocBytes)
 		   {
-		     /* Grow the copy buffer to accomodate the new maximum size. 
+		     /* Grow the copy buffer to accommodate the new maximum size. 
 			Note it is safe to call realloc() with null input pointer, 
 			which is equivalent to malloc(). */
 		     unsigned char *varColBuff1 = (unsigned char *) realloc(varColBuff, nVarBytes);
@@ -3025,7 +3025,7 @@ int ffkshf(fitsfile *fptr,  /* I - FITS file pointer                        */
   and has an index number in the range COLMIN - COLMAX, inclusive.
 
   if incre is positive, then the index values will be incremented.
-  if incre is negative, then the kewords with index = COLMIN
+  if incre is negative, then the keywords with index = COLMIN
   will be deleted and the index of higher numbered keywords will
   be decremented.
 */

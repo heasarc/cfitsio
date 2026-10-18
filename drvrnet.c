@@ -9,7 +9,7 @@
 
 /* Notes on the drivers:
 
-   The ftp driver uses passive mode exclusivly.  If your remote system can't 
+   The ftp driver uses passive mode exclusively.  If your remote system can't 
    deal with passive mode then it'll fail.  Since Netscape Navigator uses 
    passive mode as well there shouldn't be too many ftp servers which have
    problems.
@@ -32,7 +32,7 @@
    </BODY></HTML>
 
    This redirect was from apache 1.2.5 but most of the other servers produce 
-   something very similiar.  The parser for the redirects finds the first 
+   something very similar.  The parser for the redirects finds the first 
    anchor <A> tag in the body and goes there.  If that wasn't what was intended
    by the remote system then hopefully the error stack, which includes notes 
    about the redirect will help the user fix the problem.
@@ -48,11 +48,11 @@
   ****************************************************************
 
 
-   Root protocal doesn't have any real docs, so, the emperical docs are as 
+   Root protocol doesn't have any real docs, so, the empirical docs are as 
    follows.  
 
    First, you must use a slightly modified rootd server.  The modifications 
-   include implimentation of the stat command which returns the size of the 
+   include implementation of the stat command which returns the size of the 
    remote file.  Without that it's impossible for cfitsio to work properly
    since fitsfiles don't include any information about the size of the files 
    in the headers.  The rootd server closes the connections on any errors, 
@@ -64,7 +64,7 @@
 
    <len><opcode><optional information>
 
-   All binary information is transfered in network format, so use htonl and 
+   All binary information is transferred in network format, so use htonl and 
    ntohl to convert back and forth.
 
    <len> :== 4 byte length, in network format, the len doesn't include the
@@ -119,7 +119,7 @@
 
    ROOTD_PUT - on send <optional info> includes a text message of
    offset and length to put.  Then send the raw bytes you want to
-   write.  Then recieve a status message
+   write.  Then receive a status message
 
 
    When you are finished then you send the message:
@@ -362,8 +362,8 @@ int http_open(char *filename, int rwmode, int *handle)
     /* Using the cfitsio routine */
 
     status = 0;
-    /* Ok, this is a tough case, let's be arbritary and say 10*net_timeout,
-       Given the choices for nettimeout above they'll probaby ^C before, but
+    /* Ok, this is a tough case, let's be arbitrary and say 10*net_timeout,
+       Given the choices for nettimeout above they'll probably ^C before, but
        it's always worth a shot*/
     
     alarm(net_timeout*10);
@@ -466,7 +466,7 @@ int http_compress_open(char *url, int rwmode, int *handle)
 
   signal(SIGALRM, signal_handler);
   
-  /* Open the http connectin */
+  /* Open the http connection */
   alarm(net_timeout);
   if ((status = http_open_network(url,&httpfile, contentencoding, 
 				  contenttype, &contentlength, 0))) {
@@ -528,7 +528,7 @@ int http_compress_open(char *url, int rwmode, int *handle)
       alarm(0);
       status = file_write(*handle,recbuf,len);
       if (status) {
-	ffpmsg("Error writing disk file (http_compres_open)");
+	ffpmsg("Error writing disk file (http_compress_open)");
         ffpmsg(netoutfile);
 	goto error;
       }
@@ -567,7 +567,7 @@ int http_compress_open(char *url, int rwmode, int *handle)
     }
       
   } else {
-    /* Opps, this should not have happened */
+    /* Oops, this should not have happened */
     ffpmsg("Can only have compressed files here (http_compress_open)");
     goto error;
   }    
@@ -707,8 +707,8 @@ int http_file_open(char *url, int rwmode, int *handle)
     closeoutfile++;
     status = 0;
 
-    /* Ok, this is a tough case, let's be arbritary and say 10*net_timeout,
-       Given the choices for nettimeout above they'll probaby ^C before, but
+    /* Ok, this is a tough case, let's be arbitrary and say 10*net_timeout,
+       Given the choices for nettimeout above they'll probably ^C before, but
        it's always worth a shot*/
 
     alarm(net_timeout*10);
@@ -1159,7 +1159,7 @@ int https_open(char *filename, int rwmode, int *handle)
   }
   alarm(0);
   signal(SIGALRM, SIG_DFL);
-  /* We now have the file transfered from the https server into the
+  /* We now have the file transferred from the https server into the
      inmem.memory buffer.  Now transfer that into a FITS memory file. */
   if ((status = mem_create(filename, handle)))
   {
@@ -1489,7 +1489,7 @@ int ftps_open(char *filename, int rwmode, int *handle)
      strcpy(filename, localFilename);
   }
   
-  /* We now have the file transfered from the ftps server into the
+  /* We now have the file transferred from the ftps server into the
      inmem.memory buffer.  Now transfer that into a FITS memory file. */
   if ((status = mem_create(filename, handle)))
   {
@@ -2020,7 +2020,7 @@ int ssl_get_with_curl(char *url, curlmembuf* buffer, char* username,
   /* This turns on automatic decompression for all recognized types. */
   curl_easy_setopt(curl, CURLOPT_ENCODING, "");
   
-  /* tmpUrl should be large enough to accomodate original url + ".gz" */
+  /* tmpUrl should be large enough to accommodate original url + ".gz" */
   tmpUrl = (char *)malloc(strlen(url)+4);
   strcpy(tmpUrl, url);
   if (show_fits_download_progress)
@@ -2240,7 +2240,7 @@ int ftp_open(char *filename, int rwmode, int *handle)
 
   signal(SIGALRM, signal_handler);
   
-  /* Open the ftp connetion.  ftpfile is connected to the file port, 
+  /* Open the ftp connection.  ftpfile is connected to the file port, 
      command is connected to port 21.  sock is the socket on port 21 */
 
   if (strlen(filename) > MAXLEN - 4) {
@@ -2280,7 +2280,7 @@ int ftp_open(char *filename, int rwmode, int *handle)
       ('\037' == firstchar)) {
     
     status = 0;
-    /* A bit arbritary really, the user will probably hit ^C */
+    /* A bit arbitrary really, the user will probably hit ^C */
     alarm(net_timeout*10);
     status = mem_uncompress2mem(filename, ftpfile, *handle);
     alarm(0);
@@ -2443,8 +2443,8 @@ int ftp_file_open(char *url, int rwmode, int *handle)
     closeoutfile++;
     status = 0;
 
-    /* Ok, this is a tough case, let's be arbritary and say 10*net_timeout,
-       Given the choices for nettimeout above they'll probaby ^C before, but
+    /* Ok, this is a tough case, let's be arbitrary and say 10*net_timeout,
+       Given the choices for nettimeout above they'll probably ^C before, but
        it's always worth a shot*/
 
     alarm(net_timeout*10);
@@ -2621,7 +2621,7 @@ int ftp_compress_open(char *url, int rwmode, int *handle)
       alarm(0);
       status = file_write(*handle,recbuf,len);
       if (status) {
-	ffpmsg("Error writing file (ftp_compres_open)");
+	ffpmsg("Error writing file (ftp_compress_open)");
         ffpmsg(url);
         ffpmsg(netoutfile);
 	goto error;
@@ -2665,7 +2665,7 @@ int ftp_compress_open(char *url, int rwmode, int *handle)
     }
       
   } else {
-    /* Opps, this should not have happened */
+    /* Oops, this should not have happened */
     ffpmsg("Can only compressed files here (ftp_compress_open)");
     goto error;
   }    
@@ -2771,7 +2771,7 @@ static int ftp_open_network(char *filename, FILE **ftpfile, FILE **command, int 
     *sock = NET_TcpConnect(newhost,port);
     /* convert it to a stdio file */
     if (NULL == (*command = fdopen(*sock,"r"))) {
-      ffpmsg ("fdopen failed to convert socket to stdio file (ftp_open_netowrk)");
+      ffpmsg ("fdopen failed to convert socket to stdio file (ftp_open_network)");
       return (FILE_NOT_OPENED);
     }
 
@@ -3571,7 +3571,7 @@ int http_checkfile (char *urltype, char *infile, char *outfile1)
 
   if (!strstr(infile,".gz") && (!strstr(infile,".Z"))) {
     /* The infile string does not contain the name of a compressed file.  */
-    /* Fisrt, look for a .gz compressed version of the file. */
+    /* First, look for a .gz compressed version of the file. */
     
     if (strlen(infile) + 3 > MAXLEN-1)
     {
@@ -3640,7 +3640,7 @@ int http_checkfile (char *urltype, char *infile, char *outfile1)
     }
     else if (status != FILE_NOT_OPENED)
     {
-       /* Some other error occured aside from not finding file, such as
+       /* Some other error occurred aside from not finding file, such as
           a url parsing error.  Don't continue trying with other extensions. */
        return status;   
     }
@@ -3874,7 +3874,7 @@ int ftp_checkfile (char *urltype, char *infile, char *outfile1)
 
  if (!strstr(infile,".gz") && (!strstr(infile,".Z"))) {
     /* The infile string does not contain the name of a compressed file.  */
-    /* Fisrt, look for a .gz compressed version of the file. */
+    /* First, look for a .gz compressed version of the file. */
       
     if (strlen(infile)+3 > MAXLEN-1)
     {
@@ -3974,7 +3974,7 @@ int ftp_checkfile (char *urltype, char *infile, char *outfile1)
 }
 /*--------------------------------------------------------------------------*/
 /* A small helper function to wait for a particular status on the ftp 
-   connectino */
+   connection */
 static int ftp_status(FILE *ftp, char *statusstr)
 {
   /* read through until we find a string beginning with statusstr */
@@ -4088,7 +4088,7 @@ static void signal_handler(int sig) {
     longjmp(env,sig);
     
   default: {
-      /* Hmm, shouldn't have happend */
+      /* Hmm, shouldn't have happened */
       exit(sig);
     }
   }
@@ -4525,7 +4525,7 @@ static int root_recv_buffer(int sock, int *op, char *buffer, int buflen)
 
   len = ntohl(len);
 
-  /* ok, have the length, recive the operation */
+  /* ok, have the length, receive the operation */
   len -= 4;
   status = NET_RecvRaw(sock,op,4);
   if (status < 0) {

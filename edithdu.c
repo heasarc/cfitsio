@@ -231,7 +231,7 @@ int ffcphd(fitsfile *infptr,    /* I - FITS file pointer to input file  */
         strcpy(comm, "FITS dataset may contain extensions");
         ffpkyl(outfptr, "EXTEND", TRUE, comm, status);
 
-      /* write standard block of self-documentating comments */
+      /* write standard block of self-documenting comments */
       ffprec(outfptr,
       "COMMENT   FITS (Flexible Image Transport System) format is defined in 'Astronomy",
       status);

@@ -3,7 +3,7 @@ These routines to apply the H-compress decompression algorithm to a 2-D Fits
 image were written by R. White at the STScI and were obtained from the STScI at
 http://www.stsci.edu/software/hcompress.html
 
-This source file is a concatination of the following sources files in the
+This source file is a concatenation of the following sources files in the
 original distribution 
   hinv.c 
   hsmooth.c 
@@ -65,10 +65,10 @@ static int dodecode(unsigned char *infile, int a[], int nx, int ny, unsigned cha
 static int dodecode64(unsigned char *infile, LONGLONG a[], int nx, int ny, unsigned char nbitplanes[3]);
 static int qtree_decode(unsigned char *infile, int a[], int n, int nqx, int nqy, int nbitplanes);
 static int qtree_decode64(unsigned char *infile, LONGLONG a[], int n, int nqx, int nqy, int nbitplanes);
-static void start_inputing_bits(void);
+static void start_inputting_bits(void);
 static int input_bit(unsigned char *infile);
 static int input_nbits(unsigned char *infile, int n);
-/*  make input_nybble a separate routine, for added effiency */
+/*  make input_nybble a separate routine, for added efficiency */
 /* #define input_nybble(infile)	input_nbits(infile,4) */
 static int input_nybble(unsigned char *infile);
 static int input_nnybble(unsigned char *infile, int n, unsigned char *array);
@@ -1193,7 +1193,7 @@ int i, nel, nx2, ny2, stat;
 	/*
 	 * Initialize bit input
 	 */
-	start_inputing_bits();
+	start_inputting_bits();
 	/*
 	 * read bit planes for each quadrant
 	 */
@@ -1220,7 +1220,7 @@ int i, nel, nx2, ny2, stat;
 	 * now get the sign bits
 	 * Re-initialize bit input
 	 */
-	start_inputing_bits();
+	start_inputting_bits();
 	for (i=0; i<nel; i++) {
 		if (a[i]) {
 			/* tried putting the input_bit code in-line here, instead of */
@@ -1252,7 +1252,7 @@ int i, nel, nx2, ny2, stat;
 	/*
 	 * Initialize bit input
 	 */
-	start_inputing_bits();
+	start_inputting_bits();
 	/*
 	 * read bit planes for each quadrant
 	 */
@@ -1279,7 +1279,7 @@ int i, nel, nx2, ny2, stat;
 	 * now get the sign bits
 	 * Re-initialize bit input
 	 */
-	start_inputing_bits();
+	start_inputting_bits();
 	for (i=0; i<nel; i++) {
 		if (a[i]) {
 			if (input_bit(infile) != 0) a[i] = -a[i];
@@ -2495,7 +2495,7 @@ static int bits_to_go;			/* Number of bits still in buffer */
 /* INITIALIZE BIT INPUT */
 
 /*  ############################################################################  */
-static void start_inputing_bits(void)
+static void start_inputting_bits(void)
 {
 	/*
 	 * Buffer starts out with no bits in it
@@ -2527,7 +2527,7 @@ static int input_bit(unsigned char *infile)
 
 static int input_nbits(unsigned char *infile, int n)
 {
-    /* AND mask for retreiving the right-most n bits */
+    /* AND mask for retrieving the right-most n bits */
     static int mask[9] = {0, 1, 3, 7, 15, 31, 63, 127, 255};
 
 	if (bits_to_go < n) {

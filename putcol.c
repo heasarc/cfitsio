@@ -23,7 +23,7 @@ int ffppx(  fitsfile *fptr,  /* I - FITS file pointer                       */
   and scaling will be performed if necessary (e.g, if the datatype of
   the FITS array is not the same as the array being written). 
   
-  This routine is simillar to ffppr, except it supports writing to 
+  This routine is similar to ffppr, except it supports writing to 
   large images with more than 2**31 pixels.
 */
 {
@@ -113,7 +113,7 @@ int ffppxll(  fitsfile *fptr,  /* I - FITS file pointer                       */
   and scaling will be performed if necessary (e.g, if the datatype of
   the FITS array is not the same as the array being written). 
   
-  This routine is simillar to ffppr, except it supports writing to 
+  This routine is similar to ffppr, except it supports writing to 
   large images with more than 2**31 pixels.
 */
 {
@@ -1233,7 +1233,7 @@ int ffiter(int n_cols,
 
     if (n_cols  < 0 || n_cols > 999 )
     {
-        ffpmsg("Illegal number of columms (ffiter)");
+        ffpmsg("Illegal number of columns (ffiter)");
         return(*status = BAD_COL_NUM);  
     }
 
@@ -1615,7 +1615,7 @@ int ffiter(int n_cols,
 		}
         }
 
-        /* Special case: interprete 'X' column as 'B' */
+        /* Special case: interpret 'X' column as 'B' */
         if (abs(typecode) == TBIT)
         {
             typecode  = typecode / TBIT * TBYTE;
@@ -2092,7 +2092,7 @@ int ffiter(int n_cols,
       if (*status > 0 || *status < -1 ) 
          break;   /* looks like an error occurred; quit immediately */
 
-      /*  write output columns  before quiting if status = -1 */
+      /*  write output columns  before quitting if status = -1 */
       tstatus = 0;
       for (jj = 0; jj < n_cols; jj++)
       {
@@ -2127,7 +2127,7 @@ int ffiter(int n_cols,
 	    	if (ffgtcl(cols[jj].fptr, cols[jj].colnum, &typecode, &rept,&width, status) > 0)
 		    goto cleanup;
 		    
-		if (typecode<0)  /* variable length array colum */
+		if (typecode<0)  /* variable length array column */
 		{
 		   ffgdes(cols[jj].fptr, cols[jj].colnum, frow,&cols[jj].repeat, NULL,status);
 		}

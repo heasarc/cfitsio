@@ -201,7 +201,7 @@ int mem_openmem(void **buffptr,   /* I - address of memory pointer          */
     if (*handle == -1)
        return(TOO_MANY_FILES);    /* too many files opened */
 
-    memTable[ii].memaddrptr = (char **) buffptr; /* pointer to start addres */
+    memTable[ii].memaddrptr = (char **) buffptr; /* pointer to start address */
     memTable[ii].memsizeptr = buffsize;     /* allocated size of memory */
     memTable[ii].deltasize = deltasize;     /* suggested realloc increment */
     memTable[ii].fitsfilesize = *buffsize;  /* size of FITS file (upper limit) */
@@ -629,7 +629,7 @@ int mem_compress_open(char *filename, int rwmode, int *hdl)
   But one must allow for the case of very small files, where the
   gzipped file may actually be larger then the original uncompressed file.
   Therefore, only perform the modulo 2^32 correction test if the compressed 
-  file is greater than 10,000 bytes in size.  (Note: this threhold would
+  file is greater than 10,000 bytes in size.  (Note: this threshold would
   fail only if the original file was greater than 2^32 bytes in size AND gzip 
   was able to compress it by more than a factor of 400,000 (!) which seems
   highly unlikely.)
@@ -801,7 +801,7 @@ int mem_compress_stdin_open(char *filename, int rwmode, int *hdl)
 int mem_iraf_open(char *filename, int rwmode, int *hdl)
 /*
   This routine creates an empty memory buffer, then calls iraf2mem to
-  open the IRAF disk file and convert it to a FITS file in memeory.
+  open the IRAF disk file and convert it to a FITS file in memory.
 */
 {
     int status;
@@ -979,7 +979,7 @@ int mem_rawfile_open(char *filename, int rwmode, int *hdl)
         return(status);
     }
 
-    /* create a memory file with corrct size for the FITS converted raw file */
+    /* create a memory file with correct size for the FITS converted raw file */
     status = mem_createmem(filesize, hdl);
     if (status)
     {
@@ -1086,7 +1086,7 @@ int mem_uncompress2mem(char *filename, FILE *diskfile, int hdl)
 		 memTable[hdl].memaddrptr,   /* pointer to memory address */
 		 memTable[hdl].memsizeptr,   /* pointer to size of memory */
 		 realloc,                     /* reallocation function */
-		 &finalsize, &status);        /* returned file size nd status*/
+		 &finalsize, &status);        /* returned file size and status*/
 #if HAVE_BZIP2
     } else if (strstr(filename, ".bz2")) {
         bzip2uncompress2mem(filename, diskfile, hdl, &finalsize, &status);
@@ -1096,7 +1096,7 @@ int mem_uncompress2mem(char *filename, FILE *diskfile, int hdl)
 		 memTable[hdl].memaddrptr,   /* pointer to memory address */
 		 memTable[hdl].memsizeptr,   /* pointer to size of memory */
 		 realloc,                     /* reallocation function */
-		 &finalsize, &status);        /* returned file size nd status*/
+		 &finalsize, &status);        /* returned file size and status*/
     } 
 
   memTable[hdl].currentpos = 0;           /* save starting position */
@@ -1271,7 +1271,7 @@ int mem_zuncompress_and_write(int hdl, void *buffer, long nbytes)
 			  &newsize, &status);
   
   if (status) {
-    ffpmsg("unabled to uncompress memory file (mem_uncompress_and_write)");
+    ffpmsg("unable to uncompress memory file (mem_uncompress_and_write)");
     return(WRITE_ERROR);
   }
 

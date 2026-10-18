@@ -161,7 +161,7 @@ DumpSymbolTable(PIMAGE_SYMBOL pSymbolTable, FILE *fout, unsigned cSymbols)
     PSTR stringTable;
     char sectionName[10];
 	
-    fprintf(fout, "Symbol Table - %X entries  (* = auxillary symbol)\n",
+    fprintf(fout, "Symbol Table - %X entries  (* = auxiliary symbol)\n",
 	    cSymbols);
 
     fprintf(fout, 

@@ -259,7 +259,7 @@ int ffgics(fitsfile *fptr,    /* I - FITS file pointer           */
             phia = temp;
 
             /* there is a possible 180 degree ambiguity in the angles */
-            /* so add 180 degress to the smaller value if the values  */
+            /* so add 180 degrees to the smaller value if the values  */
             /* differ by more than 90 degrees = pi/2 radians.         */
             /* (Later, we may decide to take the other solution by    */
             /* subtracting 180 degrees from the larger value).        */
@@ -348,7 +348,7 @@ int ffgics(fitsfile *fptr,    /* I - FITS file pointer           */
                 phia = temp;
 
                 /* there is a possible 180 degree ambiguity in the angles */
-                /* so add 180 degress to the smaller value if the values  */
+                /* so add 180 degrees to the smaller value if the values  */
                 /* differ by more than 90 degrees = pi/2 radians.         */
                 /* (Later, we may decide to take the other solution by    */
                 /* subtracting 180 degrees from the larger value).        */
@@ -526,7 +526,7 @@ int ffgicsa(fitsfile *fptr,    /* I - FITS file pointer           */
             phia = temp;
 
             /* there is a possible 180 degree ambiguity in the angles */
-            /* so add 180 degress to the smaller value if the values  */
+            /* so add 180 degrees to the smaller value if the values  */
             /* differ by more than 90 degrees = pi/2 radians.         */
             /* (Later, we may decide to take the other solution by    */
             /* subtracting 180 degrees from the larger value).        */
@@ -631,7 +631,7 @@ int ffgicsa(fitsfile *fptr,    /* I - FITS file pointer           */
                 phia = temp;
 
                 /* there is a possible 180 degree ambiguity in the angles */
-                /* so add 180 degress to the smaller value if the values  */
+                /* so add 180 degrees to the smaller value if the values  */
                 /* differ by more than 90 degrees = pi/2 radians.         */
                 /* (Later, we may decide to take the other solution by    */
                 /* subtracting 180 degrees from the larger value).        */

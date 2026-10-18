@@ -49,7 +49,7 @@ extern "C" {
 
 #define	NGP_TTYPE_UNKNOWN	(0)			/* undef (yet) token type - invalid to print/write to disk */
 #define	NGP_TTYPE_BOOL		(1)			/* boolean, it is 'T' or 'F' */
-#define	NGP_TTYPE_STRING	(2)			/* something withing "" or starting with letter */
+#define	NGP_TTYPE_STRING	(2)			/* something within "" or starting with letter */
 #define	NGP_TTYPE_INT		(3)			/* starting with digit and not with '.' */
 #define	NGP_TTYPE_REAL		(4)			/* digits + '.' */
 #define	NGP_TTYPE_COMPLEX	(5)			/* 2 reals, separated with ',' */

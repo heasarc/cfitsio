@@ -722,7 +722,7 @@ int ffpextn( fitsfile *fptr,        /* I - FITS file pointer                    
             void *buffer,          /* I - stream of bytes to write                 */
             int  *status)          /* IO - error status                            */
 /*
-  Write a stream of bytes to the current FITS HDU.  This primative routine is mainly
+  Write a stream of bytes to the current FITS HDU.  This primitive routine is mainly
   for writing non-standard "conforming" extensions and should not be used
   for standard IMAGE, TABLE or BINTABLE extensions.
 */

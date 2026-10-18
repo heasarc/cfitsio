@@ -3,7 +3,7 @@ These routines to apply the H-compress compression algorithm to a 2-D Fits
 image were written by R. White at the STScI and were obtained from the STScI at
 http://www.stsci.edu/software/hcompress.html
 
-This source file is a concatination of the following sources files in the
+This source file is a concatenation of the following sources files in the
 original distribution 
  htrans.c 
  digitize.c 
@@ -21,7 +21,7 @@ The following modifications have been made to the original code:
     the same source file
   - changed the first parameter in encode (and in lower level routines from a file stream
     to a char array
-  - modifid the encode routine to return the size of the compressed array of bytes
+  - modified the encode routine to return the size of the compressed array of bytes
   - changed calls to printf and perror to call the CFITSIO ffpmsg routine
   - modified the mywrite routine, and lower level byte writing routines,  to copy 
     the output bytes to a char array, instead of writing them to a file stream
@@ -57,8 +57,8 @@ static int  qwrite(char *file, char buffer[], int n);
 
 static int qtree_encode(char *outfile, int a[], int n, int nqx, int nqy, int nbitplanes);
 static int qtree_encode64(char *outfile, LONGLONG a[], int n, int nqx, int nqy, int nbitplanes);
-static void start_outputing_bits(void);
-static void done_outputing_bits(char *outfile);
+static void start_outputting_bits(void);
+static void done_outputting_bits(char *outfile);
 static void output_nbits(char *outfile, int bits, int n);
 
 static void qtree_onebit(int a[], int n, int nx, int ny, unsigned char b[], int bit);
@@ -1013,7 +1013,7 @@ int nx2, ny2, stat;
 	/*
 	 * Initialize bit output
 	 */
-	start_outputing_bits();
+	start_outputting_bits();
 	/*
 	 * write out the bit planes for each quadrant
 	 */
@@ -1031,7 +1031,7 @@ int nx2, ny2, stat;
 	 * Add zero as an EOF symbol
 	 */
 	output_nybble(outfile, 0);
-	done_outputing_bits(outfile);
+	done_outputting_bits(outfile);
 	
 	return(stat);
 }
@@ -1052,7 +1052,7 @@ int nx2, ny2, stat;
 	/*
 	 * Initialize bit output
 	 */
-	start_outputing_bits();
+	start_outputting_bits();
 	/*
 	 * write out the bit planes for each quadrant
 	 */
@@ -1070,7 +1070,7 @@ int nx2, ny2, stat;
 	 * Add zero as an EOF symbol
 	 */
 	output_nybble(outfile, 0);
-	done_outputing_bits(outfile);
+	done_outputting_bits(outfile);
 	
 	return(stat);
 }
@@ -1095,7 +1095,7 @@ static int bits_to_go2;			/* Number of bits free in buffer */
 /* INITIALIZE FOR BIT OUTPUT */
 
 static void
-start_outputing_bits(void)
+start_outputting_bits(void)
 {
 	buffer2 = 0;			/* Buffer is empty to start	*/
 	bits_to_go2 = 8;		/* with				*/
@@ -1192,7 +1192,7 @@ if (bits_to_go2 != 8)
 	
 	if (bits_to_go2 == 8) {
 	    /* special case if nybbles are aligned on byte boundary */
-	    /* this actually seems to make very little differnece in speed */
+	    /* this actually seems to make very little difference in speed */
 	    buffer2 = 0;
 	    for (ii = 0; ii < jj; ii++)
 	    {
@@ -1228,7 +1228,7 @@ if (bits_to_go2 != 8)
 /* FLUSH OUT THE LAST BITS */
 
 static void
-done_outputing_bits(char *outfile)
+done_outputting_bits(char *outfile)
 {
 	if(bits_to_go2 < 8) {
 /*		putc(buffer2<<bits_to_go2,outfile); */

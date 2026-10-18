@@ -12,7 +12,7 @@
 16-Oct-98: code cleanup, #include <string.h> included, now gcc -Wall prints no
 		warnings during compilation. Bugfix: now one can specify additional
 		columns in group HDU. Autoindexing also works in this situation
-		(colunms are number from 7 however).
+		(columns are number from 7 however).
 17-Oct-98: bugfix: complex keywords were incorrectly written (was TCOMPLEX should
 		be TDBLCOMPLEX).
 20-Oct-98: bugfix: parser was writing EXTNAME twice, when first HDU in template is
@@ -27,7 +27,7 @@
 24-Oct-98: syntax change: empty lines and lines with only whitespaces are 
 		written to FITS files as blank keywords (if inside group/hdu
 		definition). Previously lines had to have at least 8 spaces.
-		Please note, that due to pecularities of CFITSIO if the
+		Please note, that due to peculiarities of CFITSIO if the
 		last keyword(s) defined for given HDU are blank keywords
 		consisting of only 80 spaces, then (some of) those keywords
 		may be silently deleted by CFITSIO.
@@ -217,7 +217,7 @@ int	ngp_line_from_file(FILE *fp, char **p)
    for (;;)
     { c = getc(fp);				/* get next character */
       if ('\r' == c) continue;			/* carriage return character ?  Just ignore it */
-      if (EOF == c)				/* EOF signalled ? */
+      if (EOF == c)				/* EOF signaled ? */
         { 
           if (ferror(fp)) r = NGP_READ_ERR;	/* was it real error or simply EOF ? */
 	  if (0 == llen) return(NGP_EOF);	/* signal EOF only if 0 characters read so far */
@@ -460,7 +460,7 @@ int	ngp_extract_tokens(NGP_RAW_LINE *cl)
           if ('\'' == *p)			/* we have found doublequote */
             { if ((0 == p[1]) || ('\n' == p[1]))/* doublequote is the last character in line */
                 { *s = 0; return(NGP_OK); }
-              if (('\t' == p[1]) || (' ' == p[1])) /* duoblequote was string terminator */
+              if (('\t' == p[1]) || (' ' == p[1])) /* doublequote was string terminator */
                 { *s = 0; p++; break; }
               if ('\'' == p[1]) p++;		/* doublequote is inside string, convert "" -> " */ 
             }
@@ -620,7 +620,7 @@ int	ngp_read_line(int ignore_blank_lines)
          case '#': continue;			/* ignore comment lines */
        }
       
-      r = ngp_extract_tokens(&ngp_curline);	/* analyse line, extract tokens and comment */
+      r = ngp_extract_tokens(&ngp_curline);	/* analyze line, extract tokens and comment */
       if (NGP_OK != r) return(r);
 
       if (NULL == ngp_curline.name)  continue;	/* skip lines consisting only of whitespaces */

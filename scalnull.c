@@ -9,7 +9,7 @@
 #include "fitsio2.h"
 /*--------------------------------------------------------------------------*/
 int ffpthp(fitsfile *fptr,      /* I - FITS file pointer */
-           long theap,          /* I - starting addrss for the heap */
+           long theap,          /* I - starting address for the heap */
            int *status)         /* IO - error status     */
 /*
   Define the starting address for the heap for a binary table.

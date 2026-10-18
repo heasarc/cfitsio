@@ -932,7 +932,7 @@ int ffgkls( fitsfile *fptr,     /* I - FITS file pointer             */
 	          if ((commSpace > 0) && (*nextcomm != 0)) 
 	          {
                       /* If in here, input 'comm' cannot be 0 */
-                      /* concantenate comment strings (if any) */
+                      /* concatenate comment strings (if any) */
                       if (strlen(comm) && addCommDelim)
                       {
                          strcat(comm, " ");
@@ -1064,7 +1064,7 @@ int ffgsky( fitsfile *fptr,     /* I - FITS file pointer             */
 	          if ((commSpace > 0) && (*nextcomm != 0)) 
 	          {
                      /* If in here, input 'comm' cannot be 0 */
-                     /* concantenate comment strings (if any) */
+                     /* concatenate comment strings (if any) */
                      if (strlen(comm) && addCommDelim)
                      {
                         strcat(comm, " ");
@@ -1230,7 +1230,7 @@ int ffglkut( fitsfile *fptr,     /* I - FITS file pointer             */
                }
                if (*comstring)
                {
-                  /* concantenate comment strings */
+                  /* concatenate comment strings */
                   if (addCommDelim)
                   {
                      lenc += strlen(comstring) + 1;
@@ -2377,7 +2377,7 @@ int ffghpr(fitsfile *fptr,  /* I - FITS file pointer                        */
            long naxes[],    /* O - length of each data axis                 */
            long *pcount,    /* O - number of group parameters (usually 0)   */
            long *gcount,    /* O - number of random groups (usually 1 or 0) */
-           int *extend,     /* O - may FITS file haave extensions?          */
+           int *extend,     /* O - may FITS file have extensions?          */
            int *status)     /* IO - error status                            */
 /*
   Get keywords from the Header of the PRimary array:
@@ -2413,7 +2413,7 @@ int ffghprll(fitsfile *fptr,  /* I - FITS file pointer                        */
            LONGLONG naxes[],    /* O - length of each data axis                 */
            long *pcount,    /* O - number of group parameters (usually 0)   */
            long *gcount,    /* O - number of random groups (usually 1 or 0) */
-           int *extend,     /* O - may FITS file haave extensions?          */
+           int *extend,     /* O - may FITS file have extensions?          */
            int *status)     /* IO - error status                            */
 /*
   Get keywords from the Header of the PRimary array:
@@ -2972,7 +2972,7 @@ int ffgphd(fitsfile *fptr,  /* I - FITS file pointer                        */
            LONGLONG naxes[],    /* O - length of each data axis                 */
            long *pcount,    /* O - number of group parameters (usually 0)   */
            long *gcount,    /* O - number of random groups (usually 1 or 0) */
-           int *extend,     /* O - may FITS file haave extensions?          */
+           int *extend,     /* O - may FITS file have extensions?          */
            double *bscale,  /* O - array pixel linear scaling factor        */
            double *bzero,   /* O - array pixel linear scaling zero point    */
            LONGLONG *blank, /* O - value used to represent undefined pixels */
@@ -3201,7 +3201,7 @@ int ffgphd(fitsfile *fptr,  /* I - FITS file pointer                        */
     for (; !found_end; nextkey++)  
     {
       /* get next keyword */
-      /* don't use ffgkyn here because it trys to parse the card to read */
+      /* don't use ffgkyn here because it tries to parse the card to read */
       /* the value string, thus failing to read the file just because of */
       /* minor syntax errors in optional keywords.                       */
 

@@ -122,7 +122,7 @@ int fffrow( fitsfile *fptr,         /* I - Input FITS file                   */
 
       if( ffiter( lParse.nCols, lParse.colData, firstrow-1, 0,
                   fits_parser_workfn, (void*)&Info, status ) == -1 )
-         *status = 0;  /* -1 indicates exitted without error before end... OK */
+         *status = 0;  /* -1 indicates exited without error before end... OK */
 
       if( *status ) {
 
@@ -457,7 +457,7 @@ int ffcrow( fitsfile *fptr,      /* I - Input FITS file                      */
    
    if( ffiter( lParse.nCols, lParse.colData, firstrow-1, 0,
                fits_parser_workfn, (void*)&Info, status ) == -1 )
-      *status=0;  /* -1 indicates exitted without error before end... OK */
+      *status=0;  /* -1 indicates exited without error before end... OK */
 
    *anynul = Info.anyNull;
    ffcprs(&lParse);
@@ -880,7 +880,7 @@ int ffiprs( fitsfile *fptr,      /* I - Input FITS file                     */
    lParse->index    = 0;
    lParse->is_eobuf = 0;
 
-   /*  Parse the expression, building the Nodes and determing  */
+   /*  Parse the expression, building the Nodes and determining  */
    /*  which columns are needed and what data type is returned  */
    
    fits_parser_yylex_init_extra(lParse, &yylex_scanner);
@@ -2111,7 +2111,7 @@ int fits_uncompress_hkdata( ParseData *lParse,
       if( ffgcvd( fptr, lParse->timeCol, row, 1L, 1L, 0.0,
                   &newtime, &anynul, status ) ) return( *status );
       if( newtime != currtime ) {
-         /*  New time encountered... propogate parameters to next row  */
+         /*  New time encountered... propagate parameters to next row  */
          if( currelem==ntimes ) {
             ffpmsg("Found more unique time stamps than caller indicated");
             return( *status = PARSE_BAD_COL );
@@ -2239,7 +2239,7 @@ int ffffrw( fitsfile *fptr,         /* I - Input FITS file                   */
       workData.lParse = &lParse;
       if( ffiter( lParse.nCols, lParse.colData, 0, 0,
                   ffffrw_work, (void*)&workData, status ) == -1 )
-         *status = 0;  /* -1 indicates exitted without error before end... OK */
+         *status = 0;  /* -1 indicates exited without error before end... OK */
    }
 
    ffcprs(&lParse);

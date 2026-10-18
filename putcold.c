@@ -576,7 +576,7 @@ int ffpclm( fitsfile *fptr,   /* I - FITS file pointer                       */
   The input array of values will be converted to the datatype of the column
   if necessary, but normally complex values should only be written to a binary
   table with TFORMn = 'rM' where r is an optional repeat count. The TSCALn and
-  TZERO keywords should not be used with complex numbers because mathmatically
+  TZERO keywords should not be used with complex numbers because mathematically
   the scaling should only be applied to the real (first) component of the
   complex value.
 */

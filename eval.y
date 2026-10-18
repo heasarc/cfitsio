@@ -3,7 +3,7 @@
 /*                       CFITSIO Lexical Parser                         */
 /*                                                                      */
 
-/* All functions preceeded by fits_parser_yy for uniqueness             */
+/* All functions preceded by fits_parser_yy for uniqueness             */
 %define api.prefix {fits_parser_yy}
 
 /* Pure reentrant parser                                                */

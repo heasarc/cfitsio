@@ -413,13 +413,13 @@ int     shared_malloc(long size, int mode, int newhandle)               /* retur
       if (shared_debug) printf(" key=%d", key);
       h = shmget(key, shared_adjust_size(size), IPC_CREAT | IPC_EXCL | shared_create_mode);
       if (shared_debug) printf(" handle=%d", h);
-      if (SHARED_INVALID == h) continue;                /* segment already accupied */
+      if (SHARED_INVALID == h) continue;                /* segment already occupied */
       bp = (BLKHEAD *)shmat(h, 0, 0);                   /* try attach */
       if (shared_debug) printf(" p=%p", (void *) bp);
       if (((BLKHEAD *)SHARED_INVALID) == bp)            /* cannot attach, delete segment, try with another key */
         { shmctl(h, IPC_RMID, 0);
           continue;
-        }                                               /* now create semaphor counting number of processes attached */
+        }                                               /* now create semaphore counting number of processes attached */
       if (SHARED_INVALID == (shared_gt[idx].sem = semget(key, 1, IPC_CREAT | IPC_EXCL | shared_create_mode)))
         { shmdt((void *)bp);                            /* cannot create segment, delete everything */
           shmctl(h, IPC_RMID, 0);
@@ -560,7 +560,7 @@ SHARED_P shared_realloc(int idx, long newsize)  /* realloc shared memory segment
     { if (i >= shared_range)  return(NULL);     /* table full, signal error & exit */
       key = shared_kbase + ((i + shared_get_hash(newsize, idx)) % shared_range);
       h = shmget(key, shared_adjust_size(newsize), IPC_CREAT | IPC_EXCL | shared_create_mode);
-      if (SHARED_INVALID == h) continue;        /* segment already accupied */
+      if (SHARED_INVALID == h) continue;        /* segment already occupied */
       bp = (BLKHEAD *)shmat(h, 0, 0);           /* try attach */
       if (((BLKHEAD *)SHARED_INVALID) == bp)    /* cannot attach, delete segment, try with another key */
         { shmctl(h, IPC_RMID, 0);

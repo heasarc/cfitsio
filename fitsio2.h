@@ -52,7 +52,7 @@ extern int Fitsio_Pthread_Status;
 
 #define NMAXFILES  10000   /* maximum number of FITS files that can be opened */
         /* CFITSIO will allocate (NMAXFILES * 80) bytes of memory */
-	/* plus each file that is opened will use NIOBUF * 2880 bytes of memeory */
+	/* plus each file that is opened will use NIOBUF * 2880 bytes of memory */
 	/* where NIOBUF is defined in fitio.h and has a default value of 40 */
 
 #define MINDIRECT 8640   /* minimum size for direct reads and writes */

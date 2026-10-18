@@ -498,7 +498,7 @@ void pr_kval_err(FILE *out,		/* output  FILE */
     }
     if(errnum & BAD_IMG) {
 	sprintf(errmes,
-        "Keyword #%d, %s: Imagine part of complex value \"%s\" is bad.",
+        "Keyword #%d, %s: Imaginary part of complex value \"%s\" is bad.",
         kpos,kname,kval);
 	wrterr(out,errmes,1);
     }

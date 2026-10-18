@@ -106,7 +106,7 @@ int writehisto(long totaln, long offset, long firstn, long nvalues,
     fits_iter_set_by_name(&cols[0], tblptr, "X", TLONG,  InputCol);
     fits_iter_set_by_name(&cols[1], tblptr, "Y", TLONG, InputCol);
 
-    rows_per_loop = 0;  /* take default number of rows per interation */
+    rows_per_loop = 0;  /* take default number of rows per iteration */
     rowoffset = 0;     
 
     /* calculate the histogram */
@@ -123,7 +123,7 @@ int calchisto(long totalrows, long offset, long firstrow, long nrows,
              int ncols, iteratorCol *cols, void *userPointer)
 
 /*
-   Interator work function that calculates values for the 2D histogram.
+   Iterator work function that calculates values for the 2D histogram.
 */
 {
     extern long xsize, ysize, xbinsize, ybinsize;

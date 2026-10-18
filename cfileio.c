@@ -1554,7 +1554,7 @@ int fits_already_open(fitsfile **fptr, /* I/O - FITS file pointer       */
        where a file is already opened but it is not realized because it
        was opened with another file path. For instance, if the CWD is
        /a/b/c and I open /a/b/c/foo.fits then open ./foo.fits the previous
-       version of this function would not have reconized that the two files
+       version of this function would not have recognized that the two files
        were the same. This version does recognize that the two files are
        the same.
      */
@@ -1937,7 +1937,7 @@ static int find_quote(char **string)
            tstr++;
         }
     }
-    return(1);  /* opps, didn't find the closing character */
+    return(1);  /* oops, didn't find the closing character */
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1961,13 +1961,13 @@ char *fits_find_match_delim(char *string, char delim)
   case '}':  retval = find_curlybracket(&tstr); break;
   case ']':  retval = find_bracket(&tstr); break;
   case ')':  retval = find_paren(&tstr); break;
-  default: return 0; /* Invalid delimeter, return failure */
+  default: return 0; /* Invalid delimiter, return failure */
   }
 
-  /* Delimeter not found, return failure */
+  /* Delimiter not found, return failure */
   if (retval) return 0;
 
-  /* Delimeter was found, return next position */
+  /* Delimiter was found, return next position */
   return (tstr);
 }
 
@@ -1990,7 +1990,7 @@ static int find_doublequote(char **string)
            tstr++;
         }
     }
-    return(1);  /* opps, didn't find the closing character */
+    return(1);  /* oops, didn't find the closing character */
 }
 
 /*--------------------------------------------------------------------------*/
@@ -2028,7 +2028,7 @@ static int find_paren(char **string)
            tstr++;
         }
     }
-    return(1);  /* opps, didn't find the closing character */
+    return(1);  /* oops, didn't find the closing character */
 }
 /*--------------------------------------------------------------------------*/
 static int find_bracket(char **string)
@@ -2064,7 +2064,7 @@ static int find_bracket(char **string)
            tstr++;
         }
     }
-    return(1);  /* opps, didn't find the closing character */
+    return(1);  /* oops, didn't find the closing character */
 }
 /*--------------------------------------------------------------------------*/
 static int find_curlybracket(char **string)
@@ -2100,7 +2100,7 @@ static int find_curlybracket(char **string)
            tstr++;
         }
     }
-    return(1);  /* opps, didn't find the closing character */
+    return(1);  /* oops, didn't find the closing character */
 }
 /*--------------------------------------------------------------------------*/
 int comma2semicolon(char *string)
@@ -2241,7 +2241,7 @@ int ffedit_columns(
     /* This was done because users cannot enter the semi-colon in the HEASARC's */
     /* Hera on-line data processing system for computer security reasons.  */
     /* Therefore, we must convert those commas back to semi-colons here, but we */
-    /* must not convert any columns that occur within parenthesies.  */
+    /* must not convert any columns that occur within parentheses.  */
 
     if (comma2semicolon(cptr)) {
          ffpmsg("parsing error in column filter expression");
@@ -2449,7 +2449,7 @@ int ffedit_columns(
 		    ffpmsg("The keyword name:");
 		    ffpmsg(colname);
 		    ffpmsg("is invalid unless a column has been previously");
-		    ffpmsg("created or editted by a calculator command");
+		    ffpmsg("created or edited by a calculator command");
                     if( file_expr ) free( file_expr );
 		    if (clause) free(clause);
 		    return(*status = URL_PARSE_ERROR);
@@ -2467,7 +2467,7 @@ int ffedit_columns(
 		      a) colnum is defined, and
 		      b) a column with literal name "NAME#" does not exist, and
 		      c) a keyword with name "NAMEn" (where n=colnum) exists, then
-		    transfrom the colname string to "NAMEn", otherwise
+		    transform the colname string to "NAMEn", otherwise
 		    do nothing.
 		*/
 		if (colnum > 0) {  /* colnum must be defined */
@@ -2497,7 +2497,7 @@ int ffedit_columns(
 	    }
 
             /* if we encountered an opening parenthesis, then we need to */
-            /* find the closing parenthesis, and concatinate the 2 strings */
+            /* find the closing parenthesis, and concatenate the 2 strings */
             /* This supports expressions like:
                 [col #EXTNAME(Extension name)="GTI"]
             */
@@ -5756,7 +5756,7 @@ int ffifile2(char *url,       /* input filename */
        as part of CFITSIO's Extended File Name Syntax.  Test for this
        case by seeing if the last character is a ']' or ')'.  If it 
        is not, then just treat the whole input string as the file name
-       and do not attempt to interprete the name using the extended
+       and do not attempt to interpret the name using the extended
        filename syntax.
      ----------------------------------------------------------- */
 
@@ -5905,7 +5905,7 @@ int ffifile2(char *url,       /* input filename */
 
     /* --------------------------------------------- */
     /* check if the 'filename+n' convention has been */
-    /* used to specifiy which HDU number to open     */ 
+    /* used to specify which HDU number to open     */ 
     /* --------------------------------------------- */
 
     jj = strlen(infile);
@@ -6357,7 +6357,7 @@ int ffifile2(char *url,       /* input filename */
 
             if (ptr2)      /* terminate the binning filter */
             {
-	        --ptr2;    /* points beyond delimeter, so rewind by 1 */
+	        --ptr2;    /* points beyond delimiter, so rewind by 1 */
                 *ptr2 = '\0';
 
                 if ( *(--ptr2) == ' ')  /* delete trailing spaces */
@@ -6931,7 +6931,7 @@ int ffrtnm(char *url,
 
     /* --------------------------------------------- */
     /* check if the 'filename+n' convention has been */
-    /* used to specifiy which HDU number to open     */ 
+    /* used to specify which HDU number to open     */ 
     /* --------------------------------------------- */
 
     jj = strlen(infile);

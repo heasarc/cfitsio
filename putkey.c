@@ -2567,7 +2567,7 @@ int ffphprll( fitsfile *fptr, /* I - FITS file pointer                        */
             ffpkyj(fptr, "GCOUNT", gcount, comm, status);
         }
 
-      /* write standard block of self-documentating comments */
+      /* write standard block of self-documenting comments */
       ffprec(fptr,
       "COMMENT   FITS (Flexible Image Transport System) format is defined in 'Astronomy",
       status);
@@ -3190,7 +3190,7 @@ int ffs2c(const char *instr, /* I - null terminated input string  */
         if (instr[ii] == '\'')
         {
             jj++;
-            outstr[jj]='\'';   /* duplicate any apostrophies in the input */
+            outstr[jj]='\'';   /* duplicate any apostrophes in the input */
         }
     }
 
@@ -3244,7 +3244,7 @@ int ffs2c_nopad(const char *instr, /* I - null terminated input string  */
         if (instr[ii] == '\'')
         {
             jj++;
-            outstr[jj]='\'';   /* duplicate any apostrophies in the input */
+            outstr[jj]='\'';   /* duplicate any apostrophes in the input */
         }
     }
 
@@ -3361,7 +3361,7 @@ int ffr2e(float fval,  /* I - value to be converted to a string */
         }
         else if ( !strchr(cval, '.') && !strchr(cval,'E') && strlen(cval) < FLEN_VALUE-1 )
         {
-            /* add decimal point if necessary to distinquish from integer */
+            /* add decimal point if necessary to distinguish from integer */
             strcat(cval, ".");
         }
     }
@@ -3472,7 +3472,7 @@ int ffd2e(double dval,  /* I - value to be converted to a string */
         }
         else if ( !strchr(cval, '.') && !strchr(cval,'E') && strlen(cval) < FLEN_VALUE-1)
         {
-            /* add decimal point if necessary to distinquish from integer */
+            /* add decimal point if necessary to distinguish from integer */
             strcat(cval, ".");
         }
     }

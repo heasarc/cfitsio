@@ -262,7 +262,7 @@ int ffgsve(fitsfile *fptr, /* I - FITS file pointer                         */
 
 /*
     if this is a primary array, then the input COLNUM parameter should
-    be interpreted as the row number, and we will alway read the image
+    be interpreted as the row number, and we will always read the image
     data from column 2 (any group parameters are in column 1).
 */
     if (ffghdt(fptr, &hdutype, status) > 0)
@@ -437,7 +437,7 @@ int ffgsfe(fitsfile *fptr, /* I - FITS file pointer                         */
 
 /*
     if this is a primary array, then the input COLNUM parameter should
-    be interpreted as the row number, and we will alway read the image
+    be interpreted as the row number, and we will always read the image
     data from column 2 (any group parameters are in column 1).
 */
     if (ffghdt(fptr, &hdutype, status) > 0)
@@ -809,7 +809,7 @@ int ffgcle( fitsfile *fptr,   /* I - FITS file pointer                       */
     /*----------------------------------------------------------------------*/
     convert = 1;
     if (tcode == TFLOAT) /* Special Case:                        */
-    {                             /* no type convertion required, so read */
+    {                             /* no type conversion required, so read */
                                   /* data directly into output buffer.    */
 
         if (nelem < (LONGLONG)INT32_MAX/4) {
@@ -826,7 +826,7 @@ int ffgcle( fitsfile *fptr,   /* I - FITS file pointer                       */
     /*  Now read the pixels from the FITS column. If the column does not   */
     /*  have the same datatype as the output array, then we have to read   */
     /*  the raw values into a temporary buffer (of limited size).  In      */
-    /*  the case of a vector colum read only 1 vector of values at a time  */
+    /*  the case of a vector column read only 1 vector of values at a time  */
     /*  then skip to the next row if more values need to be read.          */
     /*  After reading the raw values, then call the fffXXYY routine to (1) */
     /*  test for undefined values, (2) convert the datatype if necessary,  */
