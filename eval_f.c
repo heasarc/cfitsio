@@ -1029,7 +1029,9 @@ int fits_parser_workfn( long    totalrows,     /* I - Total rows to be processed
     /*--------------------------------------------------------*/
     /*  Initialization procedures: execute on the first call  */
     /*--------------------------------------------------------*/
-    outcol = colData + (nCols - 1);
+    /* An expression which uses no columns (e.g. a constant) has nCols == 0,
+       in which case there is no output iterator column to work with */
+    outcol = ( nCols > 0 ) ? colData + (nCols - 1) : 0;
     if (firstrow == offset+1)
     {
        (pv->userInfo) = (parseInfo*)userPtr;
@@ -1059,7 +1061,7 @@ int fits_parser_workfn( long    totalrows,     /* I - Total rows to be processed
 	  values will be the where the outputs are placed */
        if( (pv->userInfo)->dataPtr==NULL ) {
 
-          if( outcol->iotype == InputCol ) {
+          if( !outcol || outcol->iotype == InputCol ) {
              ffpmsg("Output column for parser results not found!");
              return( PARSE_NO_OUTPUT );
           }
@@ -1359,7 +1361,7 @@ int fits_parser_workfn( long    totalrows,     /* I - Total rows to be processed
 
     /* If a TemporaryCol output is used, we want to inform the caller
        what the null value is expected to be */
-    if (pv->Null != outcol->array && 
+    if (outcol && pv->Null != outcol->array &&
 	(Data0) == (char*) outcol->array + (pv->datasize)) {
       if( (pv->userInfo)->datatype == TSTRING )
 	memcpy( outcol->array, *(char **)(pv->Null), 2 );
@@ -1372,7 +1374,7 @@ int fits_parser_workfn( long    totalrows,     /* I - Total rows to be processed
 
     if( anyNullThisTime )
        (pv->userInfo)->anyNull = 1;
-    else if( pv->Null == outcol->array ) {
+    else if( outcol && pv->Null == outcol->array ) {
        if( (pv->userInfo)->datatype == TSTRING )
           memcpy( *(char **)(pv->Null), zeros, 2 );
        else 
@@ -2614,6 +2616,13 @@ static int find_keywd(ParseData *lParse, char *keyname, void *itslval )
 int fits_parser_allocateCol( ParseData *lParse, int nCol, int *status )
 {
    if( (nCol%25)==0 ) {
+     /* ffiprs allocates a single dummy column when the expression uses no
+        columns of its own.  fits_recalloc() starts from scratch when the
+        old count is zero, so that allocation has to be released here. */
+     if( nCol==0 && lParse->colData ) {
+       free( lParse->colData );
+       lParse->colData = NULL;
+     }
      lParse->colData = (iteratorCol*) fits_recalloc( lParse->colData,
 						     nCol, nCol+25,
 						     sizeof(iteratorCol) );
