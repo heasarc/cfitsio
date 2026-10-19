@@ -2071,7 +2071,9 @@ header.
     specified by the 'string' argument.
 
     If a NULL comment pointer is supplied then the comment string
-   will not be returned. \label{ffgky} \label{ffgkey} \label{ffgcrd}
+    will not be returned.
+    If non-null, the comment parameter should be allocated at least \verb|FLEN_COMMENT| characters.
+    \label{ffgky} \label{ffgkey} \label{ffgcrd}
 \end{description}
 
 \begin{verbatim}
@@ -2153,7 +2155,9 @@ header.
    value, and comment fields as separate (blank truncated)
    character strings.  If a NULL comment pointer is given on input,
    then the comment string will not be
-  returned. \label{ffgrec} \label{ffgkyn}
+   returned.
+   If non-null, the comment parameter should be allocated at least \verb|FLEN_COMMENT| characters.
+   \label{ffgrec} \label{ffgkyn}
 \end{description}
 
 \begin{verbatim}
@@ -2261,7 +2265,8 @@ header.
     context of this routine, TSTRING corresponds to a 'char*' data type,
     i.e., a pointer to a character array.  A null pointer may be entered 
     for the comment parameter in which case the  keyword comment
-   field will be unmodified or left blank.  \label{ffpky} \label{ffuky}
+    field will be unmodified or left blank.
+    \label{ffpky} \label{ffuky}
 \end{description}
 
 \begin{verbatim}
@@ -2282,7 +2287,8 @@ header.
     otherwise it appends a new keyword.  A null pointer may be
     entered for the comment parameter in which case the  keyword
     comment
-   field will be unmodified or left blank. \label{ffpkyu} \label{ffukyu}
+    field will be unmodified or left blank.
+    \label{ffpkyu} \label{ffukyu}
 \end{description}
 
 \begin{verbatim}
@@ -4143,7 +4149,9 @@ The following utility routines may be useful for certain applications.
     a literal character string) and comment strings.  If the keyword has no
     value (columns 9-10 not equal to '= '), then a null value string is
     returned and the comment string is set equal to column 9 - 80 of the
-   input string. \label{ffpsvc}
+    input string.
+    If non-null, the comment parameter should be allocated at least \verb|FLEN_COMMENT| characters.
+    \label{ffpsvc}
 \end{description}
 
 \begin{verbatim}
@@ -6514,6 +6522,7 @@ keyword to be read.
     (i.e., the value field is blank) then an error status = VALUE\_UNDEFINED
     will be returned and the input value will not be changed (except that
     ffgkys will reset the value to a null string).
+    If non-null, the comment parameter should be allocated at least \verb|FLEN_COMMENT| characters.
   \label{ffgkyx} \label{ffgkls}
 \end{description}
 
@@ -6569,6 +6578,7 @@ keyword to be read.
     fractional parts of the value in separate routine arguments.
     This routine may be used to read any keyword but is especially
     useful for reading the 'triple precision' keywords written by ffpkyt.
+    If non-null, the comment parameter should be allocated at least \verb|FLEN_COMMENT| characters.
   \label{ffgkyt}
 \end{description}
 
