@@ -752,29 +752,37 @@ int ffgcdw( fitsfile *fptr,   /* I - FITS file pointer                       */
                      *width = 1;
                   else if (tcode == TSTRING)   /* 'A' */
                   {
-		    int typecode;
-		    long int repeat = 0, rwidth = 0;
-		    int gstatus = 0;
+                     if (colptr->tdatatype < 0)
+                     {
+                        /* This is a variable-length string.  
+                          TFORM will have format such as "1P(<width>)", and not rAw */
+                        *width = colptr->twidth;
+                     }
+                     else
+                     {
+		        int typecode;
+		        long int repeat = 0, rwidth = 0;
+		        int gstatus = 0;
 
-		    /* Deal with possible vector string with repeat / width  by parsing
-		       the TFORM=rAw keyword */
-		    if (ffgtcl(fptr, colnum, &typecode, &repeat, &rwidth, &gstatus) == 0 &&
-			rwidth >= 1 && rwidth < repeat) {
-		      *width = rwidth;
+		        /* Deal with possible vector string with repeat / width  by parsing
+		           the TFORM=rAw keyword */
+		        if (ffgtcl(fptr, colnum, &typecode, &repeat, &rwidth, &gstatus) == 0 &&
+			    rwidth >= 1 && rwidth < repeat) {
+		          *width = rwidth;
 
-		    } else {
-		      
-		      /* Hmmm, we couldn't parse the TFORM keyword by standard, so just do
-			 simple parsing */
-		      cptr = dispfmt;
-		      while(!isdigit((int) *cptr) && *cptr != '\0') 
-			cptr++;
-		      
-		      *width = atoi(cptr);
-		    }
+		        } else {
 
-                    if (*width < 1)
-                         *width = 1;  /* default is at least 1 column */
+		          /* Hmmm, we couldn't parse the TFORM keyword by standard, so just do
+			     simple parsing */
+		          cptr = dispfmt;
+		          while(!isdigit((int) *cptr) && *cptr != '\0') 
+			    cptr++;
+
+		          *width = atoi(cptr);
+		        }
+                     }
+                     if (*width < 1)
+                          *width = 1;  /* default is at least 1 column */
                   }
             }
         }
@@ -801,7 +809,7 @@ int ffgcls2 ( fitsfile *fptr,   /* I - FITS file pointer                       *
 {
     double dtemp;
     long nullen; 
-    int tcode, maxelem, hdutype, nulcheck;
+    int tcode, maxelem, hdutype, nulcheck, trailing, dwidth=0;
     long twidth, incre;
     long ii, jj, ntodo;
     LONGLONG repeat, startpos, elemnum, readptr, tnull, rowlen, rownum, remain, next;
@@ -873,6 +881,11 @@ int ffgcls2 ( fitsfile *fptr,   /* I - FITS file pointer                       *
     }
     else
         return(*status = NOT_ASCII_COL);
+    
+    /* If TDISP keyword exists, dwidth may be different than twidth */    
+    ffgcdw(fptr, colnum, &dwidth, status);
+    if (dwidth > twidth)
+       dwidth = twidth;
 
     nullen = strlen(snull);   /* length of the undefined pixel string */
     if (nullen == 0)
@@ -938,18 +951,36 @@ int ffgcls2 ( fitsfile *fptr,   /* I - FITS file pointer                       *
 
       for (ii = (long) (next + ntodo - 1); ii >= next; ii--)
       {
-         arrayptr = array[ii] + twidth - 1;
-
-         for (jj = twidth - 1; jj > 0; jj--)  /* ignore trailing blanks */
+         arrayptr = array[ii] + dwidth - 1;
+         /* Don't start copying to output array till in range of
+            dwidth (which may differ from twidth due to TDISP setting).
+            And don't copy trailing blanks. */
+         jj = twidth - 1;
+         trailing=1;
+         while (jj >= dwidth)
          {
-            if (*buffer == ' ')
-            {
-              buffer--;
-              arrayptr--;
-            }
-            else
-              break;
+           if (*buffer != ' ')
+              trailing=0;
+           buffer--;
+           jj--;
          }
+         if (trailing)
+         {
+            /* In range of dwidth now, but so far have only seen 
+               trailing blanks */
+            while (jj > 0)
+            {
+               if (*buffer == ' ')
+               {
+                  buffer--;
+                  arrayptr--;
+                  jj--;
+               }
+               else
+                  break;
+            }
+         }   
+                     
          *(arrayptr + 1) = 0;  /* write the string terminator */
          
          for (; jj >= 0; jj--)    /* copy the string itself */
