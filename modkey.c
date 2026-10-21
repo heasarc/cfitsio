@@ -1192,7 +1192,8 @@ int ffikls( fitsfile *fptr,           /* I - FITS file pointer        */
 {
     char valstring[FLEN_VALUE];
     char card[FLEN_CARD], tmpkeyname[FLEN_CARD];
-    char tstring[FLEN_VALUE], *cptr;
+    char tstring[FLEN_VALUE];
+    const char *cptr;
     int next, remain, vlen, nquote, nchar, namelen, contin, tstatus = -1;
 
     if (*status > 0)           /* inherit input status value if > 0 */
