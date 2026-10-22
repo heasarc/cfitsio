@@ -8428,7 +8428,13 @@ int fits_compress_table(fitsfile *infptr, fitsfile *outfptr, int *status)
 
 		  if (vlalen > 0) {  /* skip zero-length VLAs */
 
-		    vlamemlen = vlalen * (int) (-coltype[ii] / 10);
+		    /* size of the uncompressed VLA, in bytes.  The element size is */
+		    /* coded in the datatype (e.g. TSHORT = 21 -> 2 bytes) except   */
+		    /* for bit arrays, where vlalen is the number of bits.          */
+		    if (coltype[ii] == -TBIT)
+		        vlamemlen = (vlalen + 7) / 8;
+		    else
+		        vlamemlen = vlalen * (int) (-coltype[ii] / 10);
 		    vlamem = (LONGLONG *) malloc((size_t) vlamemlen); /* memory for the input uncompressed VLA */
 		    if (!vlamem) {
 			ffpmsg("Could not allocate buffer for VLA");
@@ -8437,7 +8443,7 @@ int fits_compress_table(fitsfile *infptr, fitsfile *outfptr, int *status)
 			return(*status);
 		    }
 
-		    compmemlen = (size_t) (vlalen * ((LONGLONG) (-coltype[ii] / 10)) * 1.5);
+		    compmemlen = (size_t) (vlamemlen * 1.5);
 		    if (compmemlen < 100) compmemlen = 100;
 		    cvlamem = malloc(compmemlen);  /* memory for the output compressed VLA */
 		    if (!cvlamem) {
@@ -8710,7 +8716,7 @@ int fits_uncompress_table(fitsfile *infptr, fitsfile *outfptr, int *status)
     LONGLONG nrows, rmajor_colwidth[999], rmajor_colstart[1000], cmajor_colstart[1000];
     LONGLONG cmajor_repeat[999], rmajor_repeat[999], cmajor_bytespan[999], kk;
     LONGLONG headstart, datastart = 0, dataend, rowsremain, *descript, *qdescript = 0;
-    LONGLONG rowstart, cvlalen, cvlastart, vlalen, vlastart;
+    LONGLONG rowstart, cvlalen, cvlastart, vlalen, vlastart, rowlen;
     long repeat, width, vla_repeat, vla_address, rowspertile, ntile;
     int  ncols, hdutype, inttype, anynull, tstatus, zctype[999], addspace = 0, *pdescript = 0;
     char *cptr, keyname[9], tform[40];
@@ -8848,16 +8854,20 @@ int fits_uncompress_table(fitsfile *infptr, fitsfile *outfptr, int *status)
         fits_binary_tform(tform, &inttype, &repeat, &width, status);
         coltype[ii] = inttype;
 
-	/* deal with special cases */
-	if (abs(coltype[ii]) == TBIT) { 
+	/* deal with special cases.  The datatype code is negative for a       */
+	/* variable length array, so these tests must not use abs(coltype):    */
+	/* the field of a variable length column holds descriptors, whatever   */
+	/* the datatype they point to.  Same tests as in fits_compress_table.  */
+	if (coltype[ii] == TBIT) {
 	        repeat = (repeat + 7) / 8 ;   /* convert from bits to bytes */
-	} else if (abs(coltype[ii]) == TSTRING) {
+	} else if (coltype[ii] == TSTRING) {
 	        width = 1;
 	} else if (coltype[ii] < 0) {  /* pointer to variable length array */
 	        if (colcode[ii] == 'P')
 	           width = 8;  /* this is a 'P' column */
 	        else
 	           width = 16;  /* this is a 'Q' not a 'P' column */
+	        repeat = 1;
 
                 addspace += 16; /* need space for a second set of Q pointers for this column */
 	}
@@ -8894,6 +8904,24 @@ int fits_uncompress_table(fitsfile *infptr, fitsfile *outfptr, int *status)
 
     /* rescan header keywords to reset internal table structure parameters */
     fits_set_hdustruc(outfptr, status);
+
+    if (*status > 0)
+        return(*status);
+
+    /* The buffers below are sized from ZNAXIS1, but the offset of each column */
+    /* within them is computed from the ZFORMn keywords.  If those disagree    */
+    /* then the columns do not fit in the buffers, so reject the table rather  */
+    /* than write outside of them.                                             */
+    rowlen = 0;
+    for (ii = 0; ii < ncols; ii++)
+        rowlen += rmajor_colwidth[ii];
+
+    if (rowlen != (LONGLONG) naxis1) {
+        ffpmsg("Sum of the ZFORMn column widths does not equal ZNAXIS1");
+        ffpmsg(" (fits_uncompress_table)");
+        *status = DATA_DECOMPRESSION_ERR;
+        return(*status);
+    }
 
     /* ================================================================================== */
     /* allocate memory for the transposed and untransposed tile of the table */
@@ -8981,7 +9009,7 @@ int fits_uncompress_table(fitsfile *infptr, fitsfile *outfptr, int *status)
                      ffswap2((short *) cptr, fullsize / 2); 
 #endif
 	          } else { /* gunzip the data into the correct location */
-	             uncompress2mem_from_mem(ptr, vla_repeat, &cptr, &fullsize, realloc, &dlen, status);        
+	             uncompress2mem_from_mem(ptr, vla_repeat, &cptr, &fullsize, NULL, &dlen, status);        
 	          }
 	          break;
 
@@ -8994,7 +9022,7 @@ int fits_uncompress_table(fitsfile *infptr, fitsfile *outfptr, int *status)
                       ffswap4((int *) cptr,  fullsize / 4); 
 #endif
 	          } else { /* gunzip the data into the correct location */
-	             uncompress2mem_from_mem(ptr, vla_repeat, &cptr, &fullsize, realloc, &dlen, status);        
+	             uncompress2mem_from_mem(ptr, vla_repeat, &cptr, &fullsize, NULL, &dlen, status);        
 	          }
 	          break;
 
@@ -9004,7 +9032,7 @@ int fits_uncompress_table(fitsfile *infptr, fitsfile *outfptr, int *status)
    	              dlen = fits_rdecomp_byte ((unsigned char *) ptr, vla_repeat, (unsigned char *)cptr, 
 		        fullsize, 32);
 	          } else { /* gunzip the data into the correct location */
-	             uncompress2mem_from_mem(ptr, vla_repeat, &cptr, &fullsize, realloc, &dlen, status);        
+	             uncompress2mem_from_mem(ptr, vla_repeat, &cptr, &fullsize, NULL, &dlen, status);        
 	          }
 	          break;
 
@@ -9012,11 +9040,23 @@ int fits_uncompress_table(fitsfile *infptr, fitsfile *outfptr, int *status)
 		  /* all variable length array columns are included in this case */
 	          /* gunzip the data into the correct location in the full table buffer */
 	          uncompress2mem_from_mem(ptr, vla_repeat,
-	              &cptr,  &fullsize, realloc, &dlen, status);              
+	              &cptr,  &fullsize, NULL, &dlen, status);              
 
 	        } /* end of switch block */
 
 	        free(ptr);
+
+	        /* The uncompressed bytes must fit exactly in the space that was */
+	        /* reserved for this column;  cptr points into the middle of     */
+	        /* cm_buffer, so it cannot be reallocated to make more room.     */
+	        /* A stream that expands beyond the reserved space means the     */
+	        /* compressed table is corrupt.                                  */
+	        if (*status > 0) {
+	            ffpmsg("Error uncompressing a column of the compressed table");
+	            free(rm_buffer);
+	            free(cm_buffer);
+	            return(*status);
+	        }
 	  }  /* end of rmajor_repeat > 0 */
       }  /* end of loop over columns */
       
@@ -9235,7 +9275,11 @@ int fits_uncompress_table(fitsfile *infptr, fitsfile *outfptr, int *status)
 			    vlalen = qdescript[jj * 2];
 			    vlastart = qdescript[(jj * 2) + 1];
 			}			
-			vlamemlen = (size_t) (vlalen * (-coltype[ii] / 10));  /* size of the uncompressed VLA, in bytes */
+			/* size of the uncompressed VLA, in bytes (vlalen counts bits for 'X') */
+			if (coltype[ii] == -TBIT)
+			    vlamemlen = (size_t) ((vlalen + 7) / 8);
+			else
+			    vlamemlen = (size_t) (vlalen * (-coltype[ii] / 10));
 
 			/* allocate memory for the compressed vla */
 			compressed_vla = malloc( (size_t) cvlalen);
