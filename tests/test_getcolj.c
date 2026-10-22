@@ -903,6 +903,89 @@ test_jj_read_from_ascii_table(void)
 	call_01(ffclos, f);
 }
 
+static void
+test_jj_scaled_upper_limit(void)
+{
+	/* TZERO = 2^63 (written as an exact card) scales raw 0 to exactly
+	   2^63, which does not fit in a LONGLONG and must clamp to
+	   LLONG_MAX with NUM_OVERFLOW for every column type, both without
+	   (nulval = 0) and with (nulval != 0) null checking.  Raw -1024
+	   gives 2^63 - 1024, the largest double below 2^63, which fits and
+	   must be returned exactly. */
+	fitsfile *f;
+	int status = 0;
+	char *ttype[] = { "B", "I", "J", "K", "E", "D" };
+	char *tform[] = { "1B", "1I", "1J", "1K", "1E", "1D" };
+	double data[] = { 0., -1024. };
+	LONGLONG nulval[] = { 0, 9999 };
+	char card[FLEN_CARD];
+	LONGLONG result;
+	int anynull, col, ii;
+
+	call_02(ffinit, &f, "!" test_path);
+	call_04(ffphps, f, BYTE_IMG, 0, NULL);
+	call_08(ffcrtb, f, BINARY_TBL, 2, 6, ttype, tform, NULL, NULL);
+	for (col = 1; col <= 6; col++) {
+		snprintf(card, FLEN_CARD,
+			"TZERO%d  =         9223372036854775808.", col);
+		call_02(ffprec, f, card);
+		call_04(fftscl, f, col, 1., 0.);
+		/* unsigned byte column cannot hold -1024 */
+		call_06(ffpcld, f, col, 1, 1, col == 1 ? 1 : 2, data);
+	}
+	call_01(ffclos, f);
+
+	call_03(ffopen, &f, test_path, READONLY);
+	call_03(ffmahd, f, 2, NULL);
+	for (col = 1; col <= 6; col++) {
+		for (ii = 0; ii < 2; ii++) {
+			result = 42;
+			ffgcvjj(f, col, 1, 1, 1, nulval[ii], &result, &anynull,
+				&status);
+			fail_if(status != NUM_OVERFLOW);
+			status = 0;
+			fail_if(result != LLONG_MAX);
+
+			if (col == 1)
+				continue;
+			call_08(ffgcvjj, f, col, 2, 1, 1, nulval[ii], &result,
+				&anynull);
+			fail_if(result != 9223372036854774784LL);
+		}
+	}
+	call_01(ffclos, f);
+}
+
+static void
+test_jj_ascii_upper_limit(void)
+{
+	/* An ASCII table value of exactly 2^63 must clamp to LLONG_MAX
+	   with NUM_OVERFLOW, without affecting an in-range value. */
+	fitsfile *f;
+	int status = 0;
+	char *ttype[] = { "NUMCOL" };
+	char *tform[] = { "F21.0" };
+	double data[] = { 9223372036854775808., 1e18 };
+	LONGLONG result[2];
+	int anynull;
+
+	call_02(ffinit, &f, "!" test_path);
+	call_04(ffphps, f, BYTE_IMG, 0, NULL);
+	call_08(ffcrtb, f, ASCII_TBL, 2, 1, ttype, tform, NULL, NULL);
+	call_06(ffpcld, f, 1, 1, 1, 2, data);
+	call_01(ffclos, f);
+
+	call_03(ffopen, &f, test_path, READONLY);
+	call_03(ffmahd, f, 2, NULL);
+	result[0] = result[1] = 42;
+	ffgcvjj(f, 1, 1, 1, 2, 0, result, &anynull, &status);
+	fail_if(status != NUM_OVERFLOW);
+	status = 0;
+	fail_if(result[0] != LLONG_MAX);
+	fail_if(result[1] != 1000000000000000000LL);
+	call_01(ffclos, f);
+}
+
 int
 main(void)
 {
@@ -942,6 +1025,8 @@ main(void)
 	test_jj_read_from_float_column();
 	test_jj_read_from_double_column();
 	test_jj_read_from_ascii_table();
+	test_jj_scaled_upper_limit();
+	test_jj_ascii_upper_limit();
 
 	remove(test_path);
 
