@@ -2896,7 +2896,7 @@ int fffi1u8(unsigned char *input, /* I - array of values to be converted     */
                     *status = OVERFLOW_ERR;
                     output[ii] = 0;
                 }
-                else if (dvalue > DULONGLONG_MAX)
+                else if (dvalue >= DULONGLONG_LIMIT)
                 {
                     *status = OVERFLOW_ERR;
                     output[ii] = UINT64_MAX;
@@ -2945,7 +2945,7 @@ int fffi1u8(unsigned char *input, /* I - array of values to be converted     */
                         *status = OVERFLOW_ERR;
                         output[ii] = 0;
                     }
-                    else if (dvalue > DULONGLONG_MAX)
+                    else if (dvalue >= DULONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
                         output[ii] = UINT64_MAX;
@@ -3012,18 +3012,18 @@ int fffi2u8(short *input,         /* I - array of values to be converted     */
             {
                 dvalue = input[ii] * scale + zero;
 
-                if (dvalue < DLONGLONG_MIN)
+                if (dvalue < 0)
                 {
                     *status = OVERFLOW_ERR;
-                    output[ii] = LONGLONG_MIN;
+                    output[ii] = 0;
                 }
-                else if (dvalue > DLONGLONG_MAX)
+                else if (dvalue >= DULONGLONG_LIMIT)
                 {
                     *status = OVERFLOW_ERR;
-                    output[ii] = LONGLONG_MAX;
+                    output[ii] = UINT64_MAX;
                 }
                 else
-                    output[ii] = (LONGLONG) dvalue;
+                    output[ii] = (ULONGLONG) dvalue;
             }
         }
     }
@@ -3041,8 +3041,13 @@ int fffi2u8(short *input,         /* I - array of values to be converted     */
                     else
                         nullarray[ii] = 1;
                 }
+                else if (input[ii] < 0)
+                {
+                    *status = OVERFLOW_ERR;
+                    output[ii] = 0;
+                }
                 else
-                    output[ii] = (LONGLONG) input[ii];
+                    output[ii] = (ULONGLONG) input[ii];
             }
         }
         else                  /* must scale the data */
@@ -3061,18 +3066,18 @@ int fffi2u8(short *input,         /* I - array of values to be converted     */
                 {
                     dvalue = input[ii] * scale + zero;
 
-                    if (dvalue < DLONGLONG_MIN)
+                    if (dvalue < 0)
                     {
                         *status = OVERFLOW_ERR;
-                        output[ii] = LONGLONG_MIN;
+                        output[ii] = 0;
                     }
-                    else if (dvalue > DLONGLONG_MAX)
+                    else if (dvalue >= DULONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
-                        output[ii] = LONGLONG_MAX;
+                        output[ii] = UINT64_MAX;
                     }
                     else
-                        output[ii] = (LONGLONG) dvalue;
+                        output[ii] = (ULONGLONG) dvalue;
                 }
             }
         }
@@ -3138,13 +3143,13 @@ int fffi4u8(INT32BIT *input,      /* I - array of values to be converted     */
                     *status = OVERFLOW_ERR;
                     output[ii] = 0;
                 }
-                else if (dvalue > DULONGLONG_MAX)
+                else if (dvalue >= DULONGLONG_LIMIT)
                 {
                     *status = OVERFLOW_ERR;
                     output[ii] = UINT64_MAX;
                 }
                 else
-                    output[ii] = (LONGLONG) dvalue;
+                    output[ii] = (ULONGLONG) dvalue;
             }
         }
     }
@@ -3194,7 +3199,7 @@ int fffi4u8(INT32BIT *input,      /* I - array of values to be converted     */
                         *status = OVERFLOW_ERR;
                         output[ii] = 0;
                     }
-                    else if (dvalue > DULONGLONG_MAX)
+                    else if (dvalue >= DULONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
                         output[ii] = UINT64_MAX;
@@ -3276,7 +3281,7 @@ int fffi8u8(LONGLONG *input,      /* I - array of values to be converted     */
                     *status = OVERFLOW_ERR;
                     output[ii] = 0;
                 }
-                else if (dvalue > DULONGLONG_MAX)
+                else if (dvalue >= DULONGLONG_LIMIT)
                 {
                     *status = OVERFLOW_ERR;
                     output[ii] = UINT64_MAX;
@@ -3357,7 +3362,7 @@ int fffi8u8(LONGLONG *input,      /* I - array of values to be converted     */
                         *status = OVERFLOW_ERR;
                         output[ii] = 0;
                     }
-                    else if (dvalue > DULONGLONG_MAX)
+                    else if (dvalue >= DULONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
                         output[ii] = UINT64_MAX;
@@ -3412,7 +3417,7 @@ int fffr4u8(float *input,         /* I - array of values to be converted     */
                     *status = OVERFLOW_ERR;
                     output[ii] = 0;
                 }
-                else if (input[ii] > DULONGLONG_MAX)
+                else if (input[ii] >= DULONGLONG_LIMIT)
                 {
                     *status = OVERFLOW_ERR;
                     output[ii] = UINT64_MAX;
@@ -3432,7 +3437,7 @@ int fffr4u8(float *input,         /* I - array of values to be converted     */
                     *status = OVERFLOW_ERR;
                     output[ii] = 0;
                 }
-                else if (dvalue > DULONGLONG_MAX)
+                else if (dvalue >= DULONGLONG_LIMIT)
                 {
                     *status = OVERFLOW_ERR;
                     output[ii] = UINT64_MAX;
@@ -3474,7 +3479,7 @@ int fffr4u8(float *input,         /* I - array of values to be converted     */
                         *status = OVERFLOW_ERR;
                         output[ii] = 0;
                     }
-                    else if (input[ii] > DULONGLONG_MAX)
+                    else if (input[ii] >= DULONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
                         output[ii] = UINT64_MAX;
@@ -3505,7 +3510,7 @@ int fffr4u8(float *input,         /* I - array of values to be converted     */
                         *status = OVERFLOW_ERR;
                         output[ii] = 0;
                     }
-                    else if (zero > DULONGLONG_MAX)
+                    else if (zero >= DULONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
                         output[ii] = UINT64_MAX;
@@ -3523,7 +3528,7 @@ int fffr4u8(float *input,         /* I - array of values to be converted     */
                         *status = OVERFLOW_ERR;
                         output[ii] = 0;
                     }
-                    else if (dvalue > DULONGLONG_MAX)
+                    else if (dvalue >= DULONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
                         output[ii] = UINT64_MAX;
@@ -3578,7 +3583,7 @@ int fffr8u8(double *input,        /* I - array of values to be converted     */
                     *status = OVERFLOW_ERR;
                     output[ii] = 0;
                 }
-                else if (input[ii] > DULONGLONG_MAX)
+                else if (input[ii] >= DULONGLONG_LIMIT)
                 {
                     *status = OVERFLOW_ERR;
                     output[ii] = UINT64_MAX;
@@ -3598,7 +3603,7 @@ int fffr8u8(double *input,        /* I - array of values to be converted     */
                     *status = OVERFLOW_ERR;
                     output[ii] = 0;
                 }
-                else if (dvalue > DULONGLONG_MAX)
+                else if (dvalue >= DULONGLONG_LIMIT)
                 {
                     *status = OVERFLOW_ERR;
                     output[ii] = UINT64_MAX;
@@ -3639,7 +3644,7 @@ int fffr8u8(double *input,        /* I - array of values to be converted     */
                         *status = OVERFLOW_ERR;
                         output[ii] = 0;
                     }
-                    else if (input[ii] > DULONGLONG_MAX)
+                    else if (input[ii] >= DULONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
                         output[ii] = UINT64_MAX;
@@ -3670,7 +3675,7 @@ int fffr8u8(double *input,        /* I - array of values to be converted     */
                         *status = OVERFLOW_ERR;
                         output[ii] = 0;
                     }
-                    else if (zero > DULONGLONG_MAX)
+                    else if (zero >= DULONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
                         output[ii] = UINT64_MAX;
@@ -3688,7 +3693,7 @@ int fffr8u8(double *input,        /* I - array of values to be converted     */
                         *status = OVERFLOW_ERR;
                         output[ii] = 0;
                     }
-                    else if (dvalue > DULONGLONG_MAX)
+                    else if (dvalue >= DULONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
                         output[ii] = UINT64_MAX;
@@ -3867,7 +3872,7 @@ int fffstru8(char *input,         /* I - array of values to be converted     */
             *status = OVERFLOW_ERR;
             output[ii] = 0;
         }
-        else if (dvalue > DULONGLONG_MAX)
+        else if (dvalue >= DULONGLONG_LIMIT)
         {
             *status = OVERFLOW_ERR;
             output[ii] = UINT64_MAX;
