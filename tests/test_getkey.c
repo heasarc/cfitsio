@@ -313,6 +313,61 @@ test_ffpknjj(void)
 	call_01(ffclos, f);
 }
 
+static void
+test_ffgky_integer_upper_limit(void)
+{
+	/* Floating-point keyword values of exactly 2^63 (for TLONG and
+	   TLONGLONG) or 2^64 (for TULONGLONG) are out of range and must give
+	   NUM_OVERFLOW, whether written as numbers or as quoted strings.  The
+	   largest doubles below those limits must be read exactly. */
+	fitsfile *f;
+	int status = 0;
+	LONGLONG jj;
+	ULONGLONG uu;
+	long jval;
+	const char *j_over[] = { "J_OVER", "J_OVERS" };
+	const char *u_over[] = { "U_OVER", "U_OVERS" };
+	int ii;
+
+	call_02(ffinit, &f, "!" test_path);
+	call_04(ffphps, f, BYTE_IMG, 0, NULL);
+	call_02(ffprec, f, "J_OVER  =  9.223372036854775808E18");
+	call_02(ffprec, f, "J_OVERS = '9.223372036854775808E18'");
+	call_02(ffprec, f, "J_MAX   =  9.223372036854774784E18");
+	call_02(ffprec, f, "J_MIN   = -9.223372036854775808E18");
+	call_02(ffprec, f, "U_OVER  =  1.8446744073709551616E19");
+	call_02(ffprec, f, "U_OVERS = '1.8446744073709551616E19'");
+	call_02(ffprec, f, "U_MAX   =  1.8446744073709549568E19");
+	call_01(ffclos, f);
+
+	call_03(ffopen, &f, test_path, READONLY);
+	for (ii = 0; ii < 2; ii++) {
+		jj = 42;
+		ffgkyjj(f, j_over[ii], &jj, NULL, &status);
+		fail_if(status != NUM_OVERFLOW);
+		status = 0;
+		ffcmsg();
+
+		ffgkyj(f, j_over[ii], &jval, NULL, &status);
+		fail_if(status != NUM_OVERFLOW);
+		status = 0;
+		ffcmsg();
+
+		uu = 42;
+		ffgkyujj(f, u_over[ii], &uu, NULL, &status);
+		fail_if(status != NUM_OVERFLOW);
+		status = 0;
+		ffcmsg();
+	}
+	call_04(ffgkyjj, f, "J_MAX", &jj, NULL);
+	fail_if(jj != 9223372036854774784LL);
+	call_04(ffgkyjj, f, "J_MIN", &jj, NULL);
+	fail_if(jj != -9223372036854775807LL - 1);
+	call_04(ffgkyujj, f, "U_MAX", &uu, NULL);
+	fail_if(uu != 18446744073709549568ULL);
+	call_01(ffclos, f);
+}
+
 int
 main(void)
 {
@@ -334,6 +389,9 @@ main(void)
 
 	/* Keyword writing */
 	test_ffpknjj();
+
+	/* Keyword range checks */
+	test_ffgky_integer_upper_limit();
 
 	return 0;
 }

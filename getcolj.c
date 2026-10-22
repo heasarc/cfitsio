@@ -2891,7 +2891,7 @@ int fffi1i8(unsigned char *input, /* I - array of values to be converted     */
                     *status = OVERFLOW_ERR;
                     output[ii] = LONGLONG_MIN;
                 }
-                else if (dvalue > DLONGLONG_MAX)
+                else if (dvalue >= DLONGLONG_LIMIT)
                 {
                     *status = OVERFLOW_ERR;
                     output[ii] = LONGLONG_MAX;
@@ -2940,7 +2940,7 @@ int fffi1i8(unsigned char *input, /* I - array of values to be converted     */
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MIN;
                     }
-                    else if (dvalue > DLONGLONG_MAX)
+                    else if (dvalue >= DLONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MAX;
@@ -3002,7 +3002,7 @@ int fffi2i8(short *input,         /* I - array of values to be converted     */
                     *status = OVERFLOW_ERR;
                     output[ii] = LONGLONG_MIN;
                 }
-                else if (dvalue > DLONGLONG_MAX)
+                else if (dvalue >= DLONGLONG_LIMIT)
                 {
                     *status = OVERFLOW_ERR;
                     output[ii] = LONGLONG_MAX;
@@ -3051,7 +3051,7 @@ int fffi2i8(short *input,         /* I - array of values to be converted     */
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MIN;
                     }
-                    else if (dvalue > DLONGLONG_MAX)
+                    else if (dvalue >= DLONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MAX;
@@ -3113,7 +3113,7 @@ int fffi4i8(INT32BIT *input,      /* I - array of values to be converted     */
                     *status = OVERFLOW_ERR;
                     output[ii] = LONGLONG_MIN;
                 }
-                else if (dvalue > DLONGLONG_MAX)
+                else if (dvalue >= DLONGLONG_LIMIT)
                 {
                     *status = OVERFLOW_ERR;
                     output[ii] = LONGLONG_MAX;
@@ -3163,7 +3163,7 @@ int fffi4i8(INT32BIT *input,      /* I - array of values to be converted     */
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MIN;
                     }
-                    else if (dvalue > DLONGLONG_MAX)
+                    else if (dvalue >= DLONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MAX;
@@ -3249,7 +3249,7 @@ int fffi8i8(LONGLONG *input,      /* I - array of values to be converted     */
                     *status = OVERFLOW_ERR;
                     output[ii] = LONGLONG_MIN;
                 }
-                else if (dvalue > DLONGLONG_MAX)
+                else if (dvalue >= DLONGLONG_LIMIT)
                 {
                     *status = OVERFLOW_ERR;
                     output[ii] = LONGLONG_MAX;
@@ -3330,7 +3330,7 @@ int fffi8i8(LONGLONG *input,      /* I - array of values to be converted     */
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MIN;
                     }
-                    else if (dvalue > DLONGLONG_MAX)
+                    else if (dvalue >= DLONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MAX;
@@ -3385,7 +3385,7 @@ int fffr4i8(float *input,         /* I - array of values to be converted     */
                     *status = OVERFLOW_ERR;
                     output[ii] = LONGLONG_MIN;
                 }
-                else if (input[ii] > DLONGLONG_MAX)
+                else if (input[ii] >= DLONGLONG_LIMIT)
                 {
                     *status = OVERFLOW_ERR;
                     output[ii] = LONGLONG_MAX;
@@ -3405,7 +3405,7 @@ int fffr4i8(float *input,         /* I - array of values to be converted     */
                     *status = OVERFLOW_ERR;
                     output[ii] = LONGLONG_MIN;
                 }
-                else if (dvalue > DLONGLONG_MAX)
+                else if (dvalue >= DLONGLONG_LIMIT)
                 {
                     *status = OVERFLOW_ERR;
                     output[ii] = LONGLONG_MAX;
@@ -3447,7 +3447,7 @@ int fffr4i8(float *input,         /* I - array of values to be converted     */
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MIN;
                     }
-                    else if (input[ii] > DLONGLONG_MAX)
+                    else if (input[ii] >= DLONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MAX;
@@ -3478,7 +3478,7 @@ int fffr4i8(float *input,         /* I - array of values to be converted     */
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MIN;
                     }
-                    else if (zero > DLONGLONG_MAX)
+                    else if (zero >= DLONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MAX;
@@ -3496,7 +3496,7 @@ int fffr4i8(float *input,         /* I - array of values to be converted     */
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MIN;
                     }
-                    else if (dvalue > DLONGLONG_MAX)
+                    else if (dvalue >= DLONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MAX;
@@ -3551,7 +3551,7 @@ int fffr8i8(double *input,        /* I - array of values to be converted     */
                     *status = OVERFLOW_ERR;
                     output[ii] = LONGLONG_MIN;
                 }
-                else if (input[ii] > DLONGLONG_MAX)
+                else if (input[ii] >= DLONGLONG_LIMIT)
                 {
                     *status = OVERFLOW_ERR;
                     output[ii] = LONGLONG_MAX;
@@ -3571,7 +3571,7 @@ int fffr8i8(double *input,        /* I - array of values to be converted     */
                     *status = OVERFLOW_ERR;
                     output[ii] = LONGLONG_MIN;
                 }
-                else if (dvalue > DLONGLONG_MAX)
+                else if (dvalue >= DLONGLONG_LIMIT)
                 {
                     *status = OVERFLOW_ERR;
                     output[ii] = LONGLONG_MAX;
@@ -3612,7 +3612,7 @@ int fffr8i8(double *input,        /* I - array of values to be converted     */
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MIN;
                     }
-                    else if (input[ii] > DLONGLONG_MAX)
+                    else if (input[ii] >= DLONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MAX;
@@ -3643,7 +3643,7 @@ int fffr8i8(double *input,        /* I - array of values to be converted     */
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MIN;
                     }
-                    else if (zero > DLONGLONG_MAX)
+                    else if (zero >= DLONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MAX;
@@ -3661,7 +3661,7 @@ int fffr8i8(double *input,        /* I - array of values to be converted     */
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MIN;
                     }
-                    else if (dvalue > DLONGLONG_MAX)
+                    else if (dvalue >= DLONGLONG_LIMIT)
                     {
                         *status = OVERFLOW_ERR;
                         output[ii] = LONGLONG_MAX;
@@ -3840,7 +3840,7 @@ int fffstri8(char *input,         /* I - array of values to be converted     */
             *status = OVERFLOW_ERR;
             output[ii] = LONGLONG_MIN;
         }
-        else if (dvalue > DLONGLONG_MAX)
+        else if (dvalue >= DLONGLONG_LIMIT)
         {
             *status = OVERFLOW_ERR;
             output[ii] = LONGLONG_MAX;
