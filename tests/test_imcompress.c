@@ -373,6 +373,92 @@ test_plio_compress(void)
 }
 
 /*
+ * PLIO round trip of one small image.  The compressed tile buffer used to be
+ * sized at 4 bytes per pixel, which is smaller than the 7 short header that
+ * pl_p2li() always writes, so compressing an image with short rows overran
+ * the heap - see heasarc/cfitsio issue #136.
+ */
+static void
+plio_roundtrip(long nx, long ny)
+{
+	fitsfile *infptr, *outfptr;
+	int status = 0;
+	long naxes[2];
+	long npix = nx * ny;
+	int *original, *decompressed;
+	long i;
+
+	naxes[0] = nx;
+	naxes[1] = ny;
+
+	original = malloc(npix * sizeof *original);
+	decompressed = malloc(npix * sizeof *decompressed);
+	fail_if(original == NULL || decompressed == NULL);
+
+	/*
+	 * Worst case for PLIO: every pixel differs from its neighbour by more
+	 * than 4095, so each one needs 3 shorts in the line list.
+	 */
+	for (i = 0; i < npix; i += 1) {
+		original[i] = (i % 2) ? 5000 : 1;
+	}
+
+	fits_create_file(&infptr, "!" test_path, &status);
+	fail_if(status != 0);
+	fits_create_img(infptr, LONG_IMG, 2, naxes, &status);
+	fail_if(status != 0);
+	fits_write_img(infptr, TINT, 1, npix, original, &status);
+	fail_if(status != 0);
+	fits_close_file(infptr, &status);
+	fail_if(status != 0);
+
+	fits_open_file(&infptr, test_path, READONLY, &status);
+	fail_if(status != 0);
+	fits_create_file(&outfptr, "!" test_path2, &status);
+	fail_if(status != 0);
+	fits_set_compression_type(outfptr, PLIO_1, &status);
+	fail_if(status != 0);
+	fits_img_compress(infptr, outfptr, &status);
+	fail_if(status != 0);
+	fits_close_file(infptr, &status);
+	fits_close_file(outfptr, &status);
+	fail_if(status != 0);
+
+	fits_open_file(&outfptr, test_path2, READONLY, &status);
+	fail_if(status != 0);
+	fits_movabs_hdu(outfptr, 2, NULL, &status);
+	fail_if(status != 0);
+	fits_read_img(outfptr, TINT, 1, npix, NULL, decompressed, NULL,
+		&status);
+	fail_if(status != 0);
+
+	for (i = 0; i < npix; i += 1) {
+		fail_if(decompressed[i] != original[i]);
+	}
+
+	fits_close_file(outfptr, &status);
+	fail_if(status != 0);
+
+	free(original);
+	free(decompressed);
+}
+
+/*
+ * Test PLIO compression of images whose rows are too short for the old
+ * compressed tile buffer size (issue #136)
+ */
+static void
+test_plio_small_images(void)
+{
+	plio_roundtrip(1, 1);
+	plio_roundtrip(2, 2);
+	plio_roundtrip(3, 3);
+	plio_roundtrip(5, 4);
+	plio_roundtrip(9, 3);
+	plio_roundtrip(33, 3);
+}
+
+/*
  * Test HCOMPRESS compression
  */
 static void
@@ -567,6 +653,7 @@ main(void)
 	test_rice_compress_short();
 	test_gzip_compress();
 	test_plio_compress();
+	test_plio_small_images();
 	test_hcompress_compress();
 	test_is_compressed_uncompressed();
 	test_compress_byte_image();

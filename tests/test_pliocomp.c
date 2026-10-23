@@ -5,10 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "fitsio.h"
 #include "test_macros.h"
 
-int pl_p2li(int *, int, short *, int);
+int pl_p2li(int *, int, short *, size_t, int);
 int pl_l2pi(short *, size_t, int, int *, int);
+int imcomp_calc_max_elem(int, int, int, int);
 
 
 static void
@@ -17,7 +19,7 @@ test_array(int *in, size_t siz)
 	short linelist[100];
 	int output[16];
 
-	fail_if(pl_p2li(in, 1, linelist, siz) <= 0);
+	fail_if(pl_p2li(in, 1, linelist, 100, siz) <= 0);
 	fail_if(pl_l2pi(linelist, 100, 1, output, siz) != siz);
 
 	for (size_t i = 0; i < siz; i += 1) {
@@ -32,7 +34,7 @@ test_empty_input(void)
 	int pixels[1] = { 0 };
 	short linelist[100];
 
-	fail_if(pl_p2li(pixels, 1, linelist, 0));
+	fail_if(pl_p2li(pixels, 1, linelist, 100, 0));
 }
 
 static void
@@ -68,7 +70,7 @@ test_negative_clamp(void)
 	short linelist[100];
 	int output[3];
 
-	fail_if(pl_p2li(pixels, 1, linelist, 3) <= 0);
+	fail_if(pl_p2li(pixels, 1, linelist, 100, 3) <= 0);
 	fail_if(pl_l2pi(linelist, 100, 1, output, 3) != 3);
 
 	fail_if(output[0] != 0);
@@ -83,7 +85,7 @@ test_partial_decode(void)
 	short linelist[100];
 	int output[5];
 
-	fail_if(pl_p2li(pixels, 1, linelist, 10) <= 0);
+	fail_if(pl_p2li(pixels, 1, linelist, 100, 10) <= 0);
 	fail_if(pl_l2pi(linelist, 100, 1, output, 5) != 5);
 
 	for (int i = 0; i < 5; i += 1) {
@@ -108,7 +110,7 @@ test_decode_offset(void)
 	short linelist[100];
 	int output[5];
 
-	fail_if(pl_p2li(pixels, 1, linelist, 10) <= 0);
+	fail_if(pl_p2li(pixels, 1, linelist, 100, 10) <= 0);
 	fail_if(pl_l2pi(linelist, 100, 5, output, 5) != 5);
 }
 
@@ -119,7 +121,7 @@ test_decode_more_than_encoded(void)
 	short linelist[100];
 	int output[10];
 
-	fail_if(pl_p2li(pixels, 1, linelist, 5) <= 0);
+	fail_if(pl_p2li(pixels, 1, linelist, 100, 5) <= 0);
 	fail_if(pl_l2pi(linelist, 100, 1, output, 10) != 10);
 
 	for (int i = 0; i < 5; i += 1) {
@@ -171,6 +173,84 @@ test_opcode3_negative_delta(void)
 	fail_if(output[2] != 0);
 }
 
+/*
+ * Fill an array with the pattern that makes pl_p2li() emit the most shorts:
+ * every pixel differs from the previous one by more than 4095, so none of
+ * them can be encoded as a delta or merged into a run.
+ */
+static void
+worst_case_data(int *pixels, int npix)
+{
+	for (int i = 0; i < npix; i += 1) {
+		pixels[i] = (i % 2) ? 5000 : 1;
+	}
+}
+
+/*
+ * The line list must fit in the buffer that imcomp_calc_max_elem() asks
+ * imcompress.c to allocate, for any input.  It did not: the buffer was sized
+ * at 4 bytes per pixel with no allowance for the 7 short header, so small
+ * tiles overran the heap (heasarc/cfitsio issue #136).
+ */
+static void
+test_fits_in_calculated_buffer(void)
+{
+	int pixels[300];
+	short *linelist;
+	size_t capacity;
+	int maxelem, npix, ret;
+
+	for (npix = 1; npix <= 300; npix += 1) {
+		worst_case_data(pixels, npix);
+
+		maxelem = imcomp_calc_max_elem(PLIO_1, npix, 32, 0);
+		capacity = (size_t)maxelem / sizeof(short);
+
+		linelist = malloc(capacity * sizeof *linelist);
+		fail_if(linelist == NULL);
+
+		ret = pl_p2li(pixels, 1, linelist, capacity, npix);
+
+		/* it must succeed, and must have stayed inside the buffer */
+		fail_if(ret <= 0);
+		fail_if((size_t)ret > capacity);
+
+		free(linelist);
+	}
+}
+
+/*
+ * pl_p2li() must refuse to write beyond the end of the output buffer
+ */
+static void
+test_output_buffer_too_small(void)
+{
+	int pixels[16];
+	short linelist[128];
+	size_t dstlen;
+	int needed;
+
+	worst_case_data(pixels, 16);
+
+	needed = pl_p2li(pixels, 1, linelist, 128, 16);
+	fail_if(needed <= 7);
+
+	/* every buffer shorter than the line list has to be rejected */
+	for (dstlen = 0; dstlen < (size_t)needed; dstlen += 1) {
+		memset(linelist, 0x5a, sizeof linelist);
+
+		fail_if(pl_p2li(pixels, 1, linelist, dstlen, 16) >= 0);
+
+		/* nothing may have been written past the stated length */
+		for (size_t i = dstlen; i < 128; i += 1) {
+			fail_if(linelist[i] != (short)0x5a5a);
+		}
+	}
+
+	/* a buffer of exactly the right size still works */
+	fail_if(pl_p2li(pixels, 1, linelist, (size_t)needed, 16) != needed);
+}
+
 int
 main(void)
 {
@@ -183,6 +263,8 @@ main(void)
 	test_decode_more_than_encoded();
 	test_old_format_linelist();
 	test_opcode3_negative_delta();
+	test_fits_in_calculated_buffer();
+	test_output_buffer_too_small();
 
 	return 0;
 }
