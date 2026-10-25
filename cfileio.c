@@ -837,8 +837,10 @@ int ffopen(fitsfile **fptr,      /* O - FITS file pointer                   */
         FFUNLOCK;
         if (*status > 0)
         {
-            ffpmsg("failed to find or open the following file: (ffopen)");
-            ffpmsg(url);
+            const char *err = strerror(errno);
+            char msg[512];
+            snprintf(msg, sizeof msg, "(ffopen) %s: %s", url, err);
+            ffpmsg(msg);
             return(*status);
        }
     }
