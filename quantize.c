@@ -229,7 +229,7 @@ If the function value is zero, the data were not copied to idata.
 
             if (row > 0) {  /* dither the values */
 	      for (i = 0;  i < nx;  i++) {
-                if (fdata[i] != in_null_value) {
+                if (fdata[i] != in_null_value && fdata[i] == fdata[i]) {
 		    if (dither_method == SUBTRACTIVE_DITHER_2 && fdata[i] == 0.0) {
 		       idata[i] = ZERO_VALUE;
 		    } else {
@@ -250,7 +250,7 @@ If the function value is zero, the data were not copied to idata.
             } else {  /* do not dither the values */
 	       for (i = 0;  i < nx;  i++) {
  
-                 if (fdata[i] != in_null_value) {
+                 if (fdata[i] != in_null_value && fdata[i] == fdata[i]) {
 		    idata[i] =  NINT((fdata[i] - zeropt) / delta);
                  } else { 
                     idata[i] = NULL_VALUE;
@@ -418,7 +418,7 @@ If the function value is zero, the data were not copied to idata.
 
             if (row > 0) {  /* dither the values */
 	      for (i = 0;  i < nx;  i++) {
-                if (fdata[i] != in_null_value) {
+                if (fdata[i] != in_null_value && fdata[i] == fdata[i]) {
 		    if (dither_method == SUBTRACTIVE_DITHER_2 && fdata[i] == 0.0) {
 		       idata[i] = ZERO_VALUE;
 		    } else {
@@ -438,7 +438,7 @@ If the function value is zero, the data were not copied to idata.
               }
             } else {  /* do not dither the values */
 	       for (i = 0;  i < nx;  i++) {
-                 if (fdata[i] != in_null_value)
+                 if (fdata[i] != in_null_value && fdata[i] == fdata[i])
 		    idata[i] =  NINT((fdata[i] - zeropt) / delta);
                  else 
                     idata[i] = NULL_VALUE;
@@ -914,7 +914,7 @@ row of the image.
 	if (nx < 9) {
 
 		for (ii = 0; ii < nx; ii++) {
-		    if (nullcheck && array[ii] == nullvalue)
+		    if (nullcheck && (array[ii] == nullvalue || array[ii] != array[ii]))
 		        continue;
 		    else {
 			if (array[ii] < xminval) xminval = array[ii];
@@ -992,7 +992,7 @@ row of the image.
 		/***** find the first valid pixel in row */
 		ii = 0;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v1 = rowpix[ii];  /* store the good pixel value */
@@ -1006,7 +1006,7 @@ row of the image.
 		/***** find the 2nd valid pixel in row (which we will skip over) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v2 = rowpix[ii];  /* store the good pixel value */
@@ -1020,7 +1020,7 @@ row of the image.
 		/***** find the 3rd valid pixel in row */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v3 = rowpix[ii];  /* store the good pixel value */
@@ -1034,7 +1034,7 @@ row of the image.
 		/* find the 4nd valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v4 = rowpix[ii];  /* store the good pixel value */
@@ -1048,7 +1048,7 @@ row of the image.
 		/* find the 5th valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v5 = rowpix[ii];  /* store the good pixel value */
@@ -1062,7 +1062,7 @@ row of the image.
 		/* find the 6th valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v6 = rowpix[ii];  /* store the good pixel value */
@@ -1076,7 +1076,7 @@ row of the image.
 		/* find the 7th valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v7 = rowpix[ii];  /* store the good pixel value */
@@ -1090,7 +1090,7 @@ row of the image.
 		/* find the 8th valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v8 = rowpix[ii];  /* store the good pixel value */
@@ -1108,7 +1108,7 @@ row of the image.
 
 		    /* find the next valid pixel in row */
                     if (nullcheck)
-		        while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		        while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 		     
 		    if (ii == nx) break;  /* hit end of row */
 		    v9 = rowpix[ii];  /* store the good pixel value */
@@ -1260,7 +1260,7 @@ row of the image.
 	if (nx < 9) {
 
 		for (ii = 0; ii < nx; ii++) {
-		    if (nullcheck && array[ii] == nullvalue)
+		    if (nullcheck && (array[ii] == nullvalue || array[ii] != array[ii]))
 		        continue;
 		    else {
 			if (array[ii] < xminval) xminval = array[ii];
@@ -1338,7 +1338,7 @@ row of the image.
 		/***** find the first valid pixel in row */
 		ii = 0;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v1 = rowpix[ii];  /* store the good pixel value */
@@ -1352,7 +1352,7 @@ row of the image.
 		/***** find the 2nd valid pixel in row (which we will skip over) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v2 = rowpix[ii];  /* store the good pixel value */
@@ -1366,7 +1366,7 @@ row of the image.
 		/***** find the 3rd valid pixel in row */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v3 = rowpix[ii];  /* store the good pixel value */
@@ -1380,7 +1380,7 @@ row of the image.
 		/* find the 4nd valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v4 = rowpix[ii];  /* store the good pixel value */
@@ -1394,7 +1394,7 @@ row of the image.
 		/* find the 5th valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v5 = rowpix[ii];  /* store the good pixel value */
@@ -1408,7 +1408,7 @@ row of the image.
 		/* find the 6th valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v6 = rowpix[ii];  /* store the good pixel value */
@@ -1422,7 +1422,7 @@ row of the image.
 		/* find the 7th valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v7 = rowpix[ii];  /* store the good pixel value */
@@ -1436,7 +1436,7 @@ row of the image.
 		/* find the 8th valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v8 = rowpix[ii];  /* store the good pixel value */
@@ -1454,7 +1454,7 @@ row of the image.
 
 		    /* find the next valid pixel in row */
                     if (nullcheck)
-		        while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		        while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 		     
 		    if (ii == nx) break;  /* hit end of row */
 		    v9 = rowpix[ii];  /* store the good pixel value */
@@ -1621,7 +1621,7 @@ row of the image.
 	if (nx < 9) {
 
 		for (ii = 0; ii < nx; ii++) {
-		    if (nullcheck && array[ii] == nullvalue)
+		    if (nullcheck && (array[ii] == nullvalue || array[ii] != array[ii]))
 		        continue;
 		    else {
 			if (array[ii] < xminval) xminval = array[ii];
@@ -1699,7 +1699,7 @@ row of the image.
 		/***** find the first valid pixel in row */
 		ii = 0;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v1 = rowpix[ii];  /* store the good pixel value */
@@ -1713,7 +1713,7 @@ row of the image.
 		/***** find the 2nd valid pixel in row (which we will skip over) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v2 = rowpix[ii];  /* store the good pixel value */
@@ -1727,7 +1727,7 @@ row of the image.
 		/***** find the 3rd valid pixel in row */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v3 = rowpix[ii];  /* store the good pixel value */
@@ -1741,7 +1741,7 @@ row of the image.
 		/* find the 4nd valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v4 = rowpix[ii];  /* store the good pixel value */
@@ -1755,7 +1755,7 @@ row of the image.
 		/* find the 5th valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v5 = rowpix[ii];  /* store the good pixel value */
@@ -1769,7 +1769,7 @@ row of the image.
 		/* find the 6th valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v6 = rowpix[ii];  /* store the good pixel value */
@@ -1783,7 +1783,7 @@ row of the image.
 		/* find the 7th valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v7 = rowpix[ii];  /* store the good pixel value */
@@ -1797,7 +1797,7 @@ row of the image.
 		/* find the 8th valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v8 = rowpix[ii];  /* store the good pixel value */
@@ -1815,7 +1815,7 @@ row of the image.
 
 		    /* find the next valid pixel in row */
                     if (nullcheck)
-		        while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		        while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 		     
 		    if (ii == nx) break;  /* hit end of row */
 		    v9 = rowpix[ii];  /* store the good pixel value */
@@ -1967,7 +1967,7 @@ row of the image.
 	if (nx < 9) {
 
 		for (ii = 0; ii < nx; ii++) {
-		    if (nullcheck && array[ii] == nullvalue)
+		    if (nullcheck && (array[ii] == nullvalue || array[ii] != array[ii]))
 		        continue;
 		    else {
 			if (array[ii] < xminval) xminval = array[ii];
@@ -2045,7 +2045,7 @@ row of the image.
 		/***** find the first valid pixel in row */
 		ii = 0;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v1 = rowpix[ii];  /* store the good pixel value */
@@ -2059,7 +2059,7 @@ row of the image.
 		/***** find the 2nd valid pixel in row (which we will skip over) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v2 = rowpix[ii];  /* store the good pixel value */
@@ -2073,7 +2073,7 @@ row of the image.
 		/***** find the 3rd valid pixel in row */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v3 = rowpix[ii];  /* store the good pixel value */
@@ -2087,7 +2087,7 @@ row of the image.
 		/* find the 4nd valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v4 = rowpix[ii];  /* store the good pixel value */
@@ -2101,7 +2101,7 @@ row of the image.
 		/* find the 5th valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v5 = rowpix[ii];  /* store the good pixel value */
@@ -2115,7 +2115,7 @@ row of the image.
 		/* find the 6th valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v6 = rowpix[ii];  /* store the good pixel value */
@@ -2129,7 +2129,7 @@ row of the image.
 		/* find the 7th valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v7 = rowpix[ii];  /* store the good pixel value */
@@ -2143,7 +2143,7 @@ row of the image.
 		/* find the 8th valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v8 = rowpix[ii];  /* store the good pixel value */
@@ -2161,7 +2161,7 @@ row of the image.
 
 		    /* find the next valid pixel in row */
                     if (nullcheck)
-		        while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		        while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 		     
 		    if (ii == nx) break;  /* hit end of row */
 		    v9 = rowpix[ii];  /* store the good pixel value */
@@ -2307,7 +2307,7 @@ row of the image.
 	if (nx < 5) {
 
 		for (ii = 0; ii < nx; ii++) {
-		    if (nullcheck && array[ii] == nullvalue)
+		    if (nullcheck && (array[ii] == nullvalue || array[ii] != array[ii]))
 		        continue;
 		    else {
 			if (array[ii] < xminval) xminval = array[ii];
@@ -2347,7 +2347,7 @@ row of the image.
 		/***** find the first valid pixel in row */
 		ii = 0;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v1 = rowpix[ii];  /* store the good pixel value */
@@ -2360,7 +2360,7 @@ row of the image.
 		/***** find the 2nd valid pixel in row (which we will skip over) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v2 = rowpix[ii];  /* store the good pixel value */
@@ -2373,7 +2373,7 @@ row of the image.
 		/***** find the 3rd valid pixel in row */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v3 = rowpix[ii];  /* store the good pixel value */
@@ -2386,7 +2386,7 @@ row of the image.
 		/* find the 4nd valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v4 = rowpix[ii];  /* store the good pixel value */
@@ -2403,7 +2403,7 @@ row of the image.
 
 		    /* find the next valid pixel in row */
                     if (nullcheck)
-		        while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		        while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 		     
 		    if (ii == nx) break;  /* hit end of row */
 		    v5 = rowpix[ii];  /* store the good pixel value */
@@ -2525,7 +2525,7 @@ row of the image.
 	if (nx < 5) {
 
 		for (ii = 0; ii < nx; ii++) {
-		    if (nullcheck && array[ii] == nullvalue)
+		    if (nullcheck && (array[ii] == nullvalue || array[ii] != array[ii]))
 		        continue;
 		    else {
 			if (array[ii] < xminval) xminval = array[ii];
@@ -2565,7 +2565,7 @@ row of the image.
 		/***** find the first valid pixel in row */
 		ii = 0;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v1 = rowpix[ii];  /* store the good pixel value */
@@ -2578,7 +2578,7 @@ row of the image.
 		/***** find the 2nd valid pixel in row (which we will skip over) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v2 = rowpix[ii];  /* store the good pixel value */
@@ -2591,7 +2591,7 @@ row of the image.
 		/***** find the 3rd valid pixel in row */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v3 = rowpix[ii];  /* store the good pixel value */
@@ -2604,7 +2604,7 @@ row of the image.
 		/* find the 4nd valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v4 = rowpix[ii];  /* store the good pixel value */
@@ -2621,7 +2621,7 @@ row of the image.
 
 		    /* find the next valid pixel in row */
                     if (nullcheck)
-		        while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		        while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 		     
 		    if (ii == nx) break;  /* hit end of row */
 		    v5 = rowpix[ii];  /* store the good pixel value */
@@ -2742,7 +2742,7 @@ row of the image.
 	if (nx < 5) {
 
 		for (ii = 0; ii < nx; ii++) {
-		    if (nullcheck && array[ii] == nullvalue)
+		    if (nullcheck && (array[ii] == nullvalue || array[ii] != array[ii]))
 		        continue;
 		    else {
 			if (array[ii] < xminval) xminval = array[ii];
@@ -2784,7 +2784,7 @@ row of the image.
 		/***** find the first valid pixel in row */
 		ii = 0;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v1 = rowpix[ii];  /* store the good pixel value */
@@ -2797,7 +2797,7 @@ row of the image.
 		/***** find the 2nd valid pixel in row (which we will skip over) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v2 = rowpix[ii];  /* store the good pixel value */
@@ -2810,7 +2810,7 @@ row of the image.
 		/***** find the 3rd valid pixel in row */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v3 = rowpix[ii];  /* store the good pixel value */
@@ -2823,7 +2823,7 @@ row of the image.
 		/* find the 4nd valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v4 = rowpix[ii];  /* store the good pixel value */
@@ -2840,7 +2840,7 @@ row of the image.
 
 		    /* find the next valid pixel in row */
                     if (nullcheck)
-		        while (ii < nx && rowpix[ii] == nullvalue) {
+		        while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) {
 			  ii++;
 		        }
 			
@@ -2957,7 +2957,7 @@ row of the image.
 	if (nx < 5) {
 
 		for (ii = 0; ii < nx; ii++) {
-		    if (nullcheck && array[ii] == nullvalue)
+		    if (nullcheck && (array[ii] == nullvalue || array[ii] != array[ii]))
 		        continue;
 		    else {
 			if (array[ii] < xminval) xminval = array[ii];
@@ -2999,7 +2999,7 @@ row of the image.
 		/***** find the first valid pixel in row */
 		ii = 0;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v1 = rowpix[ii];  /* store the good pixel value */
@@ -3012,7 +3012,7 @@ row of the image.
 		/***** find the 2nd valid pixel in row (which we will skip over) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v2 = rowpix[ii];  /* store the good pixel value */
@@ -3025,7 +3025,7 @@ row of the image.
 		/***** find the 3rd valid pixel in row */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v3 = rowpix[ii];  /* store the good pixel value */
@@ -3038,7 +3038,7 @@ row of the image.
 		/* find the 4nd valid pixel in row (to be skipped) */
 		ii++;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v4 = rowpix[ii];  /* store the good pixel value */
@@ -3055,7 +3055,7 @@ row of the image.
 
 		    /* find the next valid pixel in row */
                     if (nullcheck)
-		        while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		        while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 		     
 		    if (ii == nx) break;  /* hit end of row */
 		    v5 = rowpix[ii];  /* store the good pixel value */
@@ -3179,7 +3179,7 @@ row of the image.
 		/***** find the first valid pixel in row */
 		ii = 0;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v1 = rowpix[ii];  /* store the good pixel value */
@@ -3191,7 +3191,7 @@ row of the image.
 
 		    /* find the next valid pixel in row */
                     if (nullcheck)
-		        while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		        while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 		     
 		    if (ii == nx) break;  /* hit end of row */
 		
@@ -3300,7 +3300,7 @@ row of the image.
 		/***** find the first valid pixel in row */
 		ii = 0;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v1 = rowpix[ii];  /* store the good pixel value */
@@ -3312,7 +3312,7 @@ row of the image.
 
 		    /* find the next valid pixel in row */
                     if (nullcheck)
-		        while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		        while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 		     
 		    if (ii == nx) break;  /* hit end of row */
 		
@@ -3421,7 +3421,7 @@ row of the image.
 		/***** find the first valid pixel in row */
 		ii = 0;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v1 = rowpix[ii];  /* store the good pixel value */
@@ -3433,7 +3433,7 @@ row of the image.
 
 		    /* find the next valid pixel in row */
                     if (nullcheck)
-		        while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		        while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 		     
 		    if (ii == nx) break;  /* hit end of row */
 		
@@ -3542,7 +3542,7 @@ row of the image.
 		/***** find the first valid pixel in row */
 		ii = 0;
 		if (nullcheck)
-		    while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		    while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 
 		if (ii == nx) continue;  /* hit end of row */
 		v1 = rowpix[ii];  /* store the good pixel value */
@@ -3554,7 +3554,7 @@ row of the image.
 
 		    /* find the next valid pixel in row */
                     if (nullcheck)
-		        while (ii < nx && rowpix[ii] == nullvalue) ii++;
+		        while (ii < nx && (rowpix[ii] == nullvalue || rowpix[ii] != rowpix[ii])) ii++;
 		     
 		    if (ii == nx) break;  /* hit end of row */
 		
