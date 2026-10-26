@@ -147,6 +147,7 @@ CLEANFILES += \
 	test_histo_out.fits \
 	test_imcompress.fits \
 	test_imcompress2.fits \
+	test_imcompress3.fits \
 	test_iraffits.imh \
 	test_iraffits.pix \
 	test_modkey.fits \
