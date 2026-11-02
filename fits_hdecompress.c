@@ -47,9 +47,10 @@ The following modifications have been made to the original code:
 #endif
 
 static long nextchar;
+static long inputlen;
 
-static int decode(unsigned char *infile, int *a, int na, int *nx, int *ny, int *scale);
-static int decode64(unsigned char *infile, LONGLONG *a, int na, int *nx, int *ny, int *scale);
+static int decode(unsigned char *infile, long nlen, int *a, int na, int *nx, int *ny, int *scale);
+static int decode64(unsigned char *infile, long nlen, LONGLONG *a, int na, int *nx, int *ny, int *scale);
 static int hinv(int a[], int nx, int ny, int smooth ,int scale);
 static int hinv64(LONGLONG a[], int nx, int ny, int smooth ,int scale);
 static void undigitize(int a[], int nx, int ny, int scale);
@@ -58,7 +59,7 @@ static void unshuffle(int a[], int n, int n2, int tmp[]);
 static void unshuffle64(LONGLONG a[], int n, int n2, LONGLONG tmp[]);
 static void hsmooth(int a[], int nxtop, int nytop, int ny, int scale);
 static void hsmooth64(LONGLONG a[], int nxtop, int nytop, int ny, int scale);
-static void qread(unsigned char *infile,char *a, int n);
+static int  qread(unsigned char *infile,char *a, int n);
 static int  readint(unsigned char *infile);
 static LONGLONG readlonglong(unsigned char *infile);
 static int dodecode(unsigned char *infile, int a[], int nx, int ny, unsigned char nbitplanes[3]);
@@ -82,13 +83,14 @@ static void read_bdirect64(unsigned char *infile, LONGLONG a[], int n, int nqx, 
 static int  input_huffman(unsigned char *infile);
 
 /* ---------------------------------------------------------------------- */
-int fits_hdecompress(unsigned char *input, int smooth, int *a, int na, int *ny, int *nx, 
+int fits_hdecompress(unsigned char *input, long nlen, int smooth, int *a, int na, int *ny, int *nx,
                      int *scale, int *status)
 {
-  /* 
+  /*
      decompress the input byte stream using the H-compress algorithm
-  
+
    input  - input array of compressed bytes
+   nlen   - length of input array in bytes
    a - pre-allocated array to hold the output uncompressed image
    na - number of integers allocated for a (eg, sizeof a / sizeof *a)
    nx - returned X axis size
@@ -106,7 +108,7 @@ int stat;
 	/* decode the input array */
 
         FFLOCK;  /* decode uses the nextchar global variable */
-	stat = decode(input, a, na, nx, ny, scale);
+	stat = decode(input, nlen, a, na, nx, ny, scale);
         FFUNLOCK;
 
         *status = stat;
@@ -126,13 +128,14 @@ int stat;
   return(*status);
 }
 /* ---------------------------------------------------------------------- */
-int fits_hdecompress64(unsigned char *input, int smooth, LONGLONG *a, int na, int *ny, int *nx, 
+int fits_hdecompress64(unsigned char *input, long nlen, int smooth, LONGLONG *a, int na, int *ny, int *nx,
                      int *scale, int *status)
 {
-  /* 
+  /*
      decompress the input byte stream using the H-compress algorithm
-  
+
    input  - input array of compressed bytes
+   nlen   - length of input array in bytes
    a - pre-allocated array to hold the output uncompressed image
    na - number of integers allocated for a (eg, sizeof a / sizeof *a)
    nx - returned X axis size
@@ -150,7 +153,7 @@ int fits_hdecompress64(unsigned char *input, int smooth, LONGLONG *a, int na, in
 	/* decode the input array */
 
         FFLOCK;  /* decode uses the nextchar global variable */
-	stat = decode64(input, a, na, nx, ny, scale);
+	stat = decode64(input, nlen, a, na, nx, ny, scale);
         FFUNLOCK;
 
         *status = stat;
@@ -1044,13 +1047,14 @@ LONGLONG *p, scale64;
 static char code_magic[2] = { (char)0xDD, (char)0x99 };
 
 /*  ############################################################################  */
-static int decode(unsigned char *infile, int *a, int na, int *nx, int *ny, int *scale)
+static int decode(unsigned char *infile, long nlen, int *a, int na, int *nx, int *ny, int *scale)
 /*
-char *infile;				 input file							
+char *infile;				 input file
+long nlen;				 length of input array in bytes
 int  *a;				 address of output array [nx][ny]
 int  na;		                 number of ints allocated for output array
-int  *nx,*ny;				 dimensions of image					
-int  *scale;				 scale factor for digitization		
+int  *nx,*ny;				 dimensions of image
+int  *scale;				 scale factor for digitization
 */
 {
 LONGLONG sumall;
@@ -1060,12 +1064,15 @@ char tmagic[2];
 
 	/* initialize the byte read position to the beginning of the array */;
 	nextchar = 0;
+	inputlen = nlen;
 	
 	/*
 	 * File starts either with special 2-byte magic code or with
 	 * FITS keyword "SIMPLE  ="
 	 */
-	qread(infile, tmagic, sizeof(tmagic));
+	if (qread(infile, tmagic, sizeof(tmagic))) {
+		return(DATA_DECOMPRESSION_ERR);
+	}
 	/*
 	 * check for correct magic code value
 	 */
@@ -1076,7 +1083,7 @@ char tmagic[2];
 	*nx =readint(infile);				/* x size of image			*/
 	*ny =readint(infile);				/* y size of image			*/
 	*scale=readint(infile);				/* scale factor for digitization	*/
-	
+
         if ((*ny)==0 ||(*nx) > INT_MAX/(*ny)) {
                 ffpmsg("numerical overflow during decompression");
                 return(DATA_DECOMPRESSION_ERR);
@@ -1085,12 +1092,14 @@ char tmagic[2];
                 ffpmsg("wrong allocation size during decompression");
 		return(DATA_DECOMPRESSION_ERR);
         }
-        
+
 	/* sum of all pixels	*/
 	sumall=readlonglong(infile);
 	/* # bits in quadrants	*/
 
-	qread(infile, (char *) nbitplanes, sizeof(nbitplanes));
+	if (qread(infile, (char *) nbitplanes, sizeof(nbitplanes))) {
+		return(DATA_DECOMPRESSION_ERR);
+	}
 
 	stat = dodecode(infile, a, *nx, *ny, nbitplanes);
 	/*
@@ -1100,13 +1109,14 @@ char tmagic[2];
 	return(stat);
 }
 /*  ############################################################################  */
-static int decode64(unsigned char *infile, LONGLONG *a, int na, int *nx, int *ny, int *scale)
+static int decode64(unsigned char *infile, long nlen, LONGLONG *a, int na, int *nx, int *ny, int *scale)
 /*
-char *infile;				 input file							
+char *infile;				 input file
+long nlen;				 length of input array in bytes
 LONGLONG  *a;				 address of output array [nx][ny]
-int  na;                                 number of ints allocated for output array		
-int  *nx,*ny;				 dimensions of image					
-int  *scale;				 scale factor for digitization		
+int  na;                                 number of ints allocated for output array
+int  *nx,*ny;				 dimensions of image
+int  *scale;				 scale factor for digitization
 */
 {
 int stat;
@@ -1116,12 +1126,15 @@ char tmagic[2];
 
 	/* initialize the byte read position to the beginning of the array */;
 	nextchar = 0;
+	inputlen = nlen;
 	
 	/*
 	 * File starts either with special 2-byte magic code or with
 	 * FITS keyword "SIMPLE  ="
 	 */
-	qread(infile, tmagic, sizeof(tmagic));
+	if (qread(infile, tmagic, sizeof(tmagic))) {
+		return(DATA_DECOMPRESSION_ERR);
+	}
 	/*
 	 * check for correct magic code value
 	 */
@@ -1132,7 +1145,7 @@ char tmagic[2];
 	*nx =readint(infile);				/* x size of image			*/
 	*ny =readint(infile);				/* y size of image			*/
 	*scale=readint(infile);				/* scale factor for digitization	*/
-	
+
         if ((*ny)==0 || (*nx) > INT_MAX/(*ny)) {
                 ffpmsg("numerical overflow during decompression");
                 return(DATA_DECOMPRESSION_ERR);
@@ -1141,12 +1154,14 @@ char tmagic[2];
                 ffpmsg("wrong allocation size during decompression");
 		return(DATA_DECOMPRESSION_ERR);
         }
-        
+
 	/* sum of all pixels	*/
 	sumall=readlonglong(infile);
 	/* # bits in quadrants	*/
 
-	qread(infile, (char *) nbitplanes, sizeof(nbitplanes));
+	if (qread(infile, (char *) nbitplanes, sizeof(nbitplanes))) {
+		return(DATA_DECOMPRESSION_ERR);
+	}
 
 	stat = dodecode64(infile, a, *nx, *ny, nbitplanes);
 	/*
@@ -2467,15 +2482,20 @@ unsigned char b[8];
 }
 
 /*  ############################################################################  */
-static void qread(unsigned char *file, char buffer[], int n)
+static int qread(unsigned char *file, char buffer[], int n)
 {
     /*
      * read n bytes from file into buffer
      *
      */
 
+    if (nextchar + n > inputlen) {
+        ffpmsg("H-compress input buffer overrun");
+        return(DATA_DECOMPRESSION_ERR);
+    }
     memcpy(buffer, &file[nextchar], n);
     nextchar += n;
+    return(0);
 }
 
 /*  ############################################################################  */
@@ -2510,9 +2530,10 @@ static int input_bit(unsigned char *infile)
 {
 	if (bits_to_go == 0) {			/* Read the next byte if no	*/
 
+		if (nextchar >= inputlen) return(-1);
 		buffer2 = infile[nextchar];
 		nextchar++;
-		
+
 		bits_to_go = 8;
 	}
 	/*
@@ -2535,6 +2556,7 @@ static int input_nbits(unsigned char *infile, int n)
 		 * need another byte's worth of bits
 		 */
 
+		if (nextchar >= inputlen) return(-1);
 		buffer2 = (buffer2<<8) | (int) infile[nextchar];
 		nextchar++;
 		bits_to_go += 8;
@@ -2558,6 +2580,7 @@ static int input_nybble(unsigned char *infile)
 		 * need another byte's worth of bits
 		 */
 
+		if (nextchar >= inputlen) return(-1);
 		buffer2 = (buffer2<<8) | (int) infile[nextchar];
 		nextchar++;
 		bits_to_go += 8;
@@ -2588,27 +2611,28 @@ if (bits_to_go != 8) input_nbits(infile, bits_to_go);
 	
 	if (bits_to_go == 8) {
 		/*
-		   already have 2 full nybbles in buffer2, so 
+		   already have 2 full nybbles in buffer2, so
 		   backspace the infile array to reuse last char
 		*/
 		nextchar--;
 		bits_to_go = 0;
 	}
-	
+
 	/* bits_to_go now has a value in the range 0 - 7.  After adding  */
-	/* another byte, bits_to_go effectively will be in range 8 - 15 */	
+	/* another byte, bits_to_go effectively will be in range 8 - 15 */
 
 	shift1 = bits_to_go + 4;   /* shift1 will be in range 4 - 11 */
 	shift2 = bits_to_go;	   /* shift2 will be in range 0 -  7 */
 	kk = 0;
 
 	/* special case */
-	if (bits_to_go == 0) 
+	if (bits_to_go == 0)
 	{
 	    for (ii = 0; ii < n/2; ii++) {
 		/*
 		 * refill the buffer with next byte
 		 */
+		if (nextchar >= inputlen) return(-1);
 		buffer2 = (buffer2<<8) | (int) infile[nextchar];
 		nextchar++;
 		array[kk]     = (int) ((buffer2>>4) & 15);
@@ -2622,6 +2646,7 @@ if (bits_to_go != 8) input_nbits(infile, bits_to_go);
 		/*
 		 * refill the buffer with next byte
 		 */
+		if (nextchar >= inputlen) return(-1);
 		buffer2 = (buffer2<<8) | (int) infile[nextchar];
 		nextchar++;
 		array[kk]     = (int) ((buffer2>>shift1) & 15);
