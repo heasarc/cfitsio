@@ -6364,11 +6364,11 @@ int imcomp_decompress_tile (fitsfile *infptr,
         smooth = (infptr->Fptr)->hcomp_smooth;
 
         if ( ((infptr->Fptr)->zbitpix == BYTE_IMG || (infptr->Fptr)->zbitpix == SHORT_IMG)) {
-            *status = fits_hdecompress(cbuf, smooth, idata, tilelen, &nx, &ny,
+            *status = fits_hdecompress(cbuf, nelemll, smooth, idata, tilelen, &nx, &ny,
 	        &scale, status);
         } else {  /* zbitpix = LONG_IMG (32) */
             /* idata must have been allocated twice as large for this to work */
-            *status = fits_hdecompress64(cbuf, smooth, (LONGLONG *) idata, tilelen, &nx, &ny,
+            *status = fits_hdecompress64(cbuf, nelemll, smooth, (LONGLONG *) idata, tilelen, &nx, &ny,
 	        &scale, status);
         }       
 

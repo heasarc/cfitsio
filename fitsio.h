@@ -2058,10 +2058,10 @@ int CFITS_API fits_hcompress(int *a, int nx, int ny, int scale, char *output,
     long *nbytes, int *status);
 int CFITS_API fits_hcompress64(LONGLONG *a, int nx, int ny, int scale, char *output, 
     long *nbytes, int *status);
-int CFITS_API fits_hdecompress(unsigned char *input, int smooth, int *a, int na, int *nx, 
-       int *ny, int *scale, int *status);
-int CFITS_API fits_hdecompress64(unsigned char *input, int smooth, LONGLONG *a, int na, int *nx, 
-       int *ny, int *scale, int *status);
+int CFITS_API fits_hdecompress(unsigned char *input, long insize, int smooth, 
+                int *a, int na, int *nx, int *ny, int *scale, int *status);
+int CFITS_API fits_hdecompress64(unsigned char *input, long insize, int smooth, 
+                LONGLONG *a, int na, int *nx, int *ny, int *scale, int *status);
 
 int CFITS_API fits_compress_table  (fitsfile *infptr, fitsfile *outfptr, int *status);
 int CFITS_API fits_uncompress_table(fitsfile *infptr, fitsfile *outfptr, int *status);

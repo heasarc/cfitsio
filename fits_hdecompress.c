@@ -47,9 +47,11 @@ The following modifications have been made to the original code:
 #endif
 
 static long nextchar;
+static long inputBuffSize=0;
+static int inputBuffErr=0;
 
-static int decode(unsigned char *infile, int *a, int na, int *nx, int *ny, int *scale);
-static int decode64(unsigned char *infile, LONGLONG *a, int na, int *nx, int *ny, int *scale);
+static int decode(unsigned char *infile, long insize, int *a, int na, int *nx, int *ny, int *scale);
+static int decode64(unsigned char *infile, long insize, LONGLONG *a, int na, int *nx, int *ny, int *scale);
 static int hinv(int a[], int nx, int ny, int smooth ,int scale);
 static int hinv64(LONGLONG a[], int nx, int ny, int smooth ,int scale);
 static void undigitize(int a[], int nx, int ny, int scale);
@@ -82,13 +84,14 @@ static void read_bdirect64(unsigned char *infile, LONGLONG a[], int n, int nqx, 
 static int  input_huffman(unsigned char *infile);
 
 /* ---------------------------------------------------------------------- */
-int fits_hdecompress(unsigned char *input, int smooth, int *a, int na, int *ny, int *nx, 
-                     int *scale, int *status)
+int fits_hdecompress(unsigned char *input, long insize, int smooth, 
+                int *a, int na, int *ny, int *nx, int *scale, int *status)
 {
   /* 
      decompress the input byte stream using the H-compress algorithm
   
    input  - input array of compressed bytes
+   insize - length of input array
    a - pre-allocated array to hold the output uncompressed image
    na - number of integers allocated for a (eg, sizeof a / sizeof *a)
    nx - returned X axis size
@@ -106,7 +109,7 @@ int stat;
 	/* decode the input array */
 
         FFLOCK;  /* decode uses the nextchar global variable */
-	stat = decode(input, a, na, nx, ny, scale);
+	stat = decode(input, insize, a, na, nx, ny, scale);
         FFUNLOCK;
 
         *status = stat;
@@ -126,13 +129,14 @@ int stat;
   return(*status);
 }
 /* ---------------------------------------------------------------------- */
-int fits_hdecompress64(unsigned char *input, int smooth, LONGLONG *a, int na, int *ny, int *nx, 
+int fits_hdecompress64(unsigned char *input, long insize, int smooth, LONGLONG *a, int na, int *ny, int *nx, 
                      int *scale, int *status)
 {
   /* 
      decompress the input byte stream using the H-compress algorithm
   
    input  - input array of compressed bytes
+   insize - length of input array
    a - pre-allocated array to hold the output uncompressed image
    na - number of integers allocated for a (eg, sizeof a / sizeof *a)
    nx - returned X axis size
@@ -150,7 +154,7 @@ int fits_hdecompress64(unsigned char *input, int smooth, LONGLONG *a, int na, in
 	/* decode the input array */
 
         FFLOCK;  /* decode uses the nextchar global variable */
-	stat = decode64(input, a, na, nx, ny, scale);
+	stat = decode64(input, insize, a, na, nx, ny, scale);
         FFUNLOCK;
 
         *status = stat;
@@ -1044,9 +1048,10 @@ LONGLONG *p, scale64;
 static char code_magic[2] = { (char)0xDD, (char)0x99 };
 
 /*  ############################################################################  */
-static int decode(unsigned char *infile, int *a, int na, int *nx, int *ny, int *scale)
+static int decode(unsigned char *infile, long insize, int *a, int na, int *nx, int *ny, int *scale)
 /*
-char *infile;				 input file							
+char *infile;				 input file
+long insize;                             length of infile array							
 int  *a;				 address of output array [nx][ny]
 int  na;		                 number of ints allocated for output array
 int  *nx,*ny;				 dimensions of image					
@@ -1061,11 +1066,19 @@ char tmagic[2];
 	/* initialize the byte read position to the beginning of the array */;
 	nextchar = 0;
 	
+        inputBuffSize = insize;
+        inputBuffErr = 0;
+        
 	/*
 	 * File starts either with special 2-byte magic code or with
 	 * FITS keyword "SIMPLE  ="
 	 */
 	qread(infile, tmagic, sizeof(tmagic));
+        if (inputBuffErr)
+        {
+           ffpmsg("decode: attempt to read past end of input buffer");
+           return(DATA_DECOMPRESSION_ERR);
+        }
 	/*
 	 * check for correct magic code value
 	 */
@@ -1077,7 +1090,16 @@ char tmagic[2];
 	*ny =readint(infile);				/* y size of image			*/
 	*scale=readint(infile);				/* scale factor for digitization	*/
 	
-        if ((*ny)==0 ||(*nx) > INT_MAX/(*ny)) {
+        if (inputBuffErr)
+        {
+           ffpmsg("decode: attempt to read past end of input buffer");
+           return(DATA_DECOMPRESSION_ERR);
+        }
+        if ((*nx) <= 0 || (*ny) <= 0) {
+                ffpmsg("neg or zero nx,ny value during decompression");
+                return(DATA_DECOMPRESSION_ERR);
+        }        
+        if ((*nx) > INT_MAX/(*ny)) {
                 ffpmsg("numerical overflow during decompression");
                 return(DATA_DECOMPRESSION_ERR);
         }
@@ -1091,6 +1113,11 @@ char tmagic[2];
 	/* # bits in quadrants	*/
 
 	qread(infile, (char *) nbitplanes, sizeof(nbitplanes));
+        if (inputBuffErr)
+        {
+           ffpmsg("decode: attempt to read past end of input buffer");
+           return(DATA_DECOMPRESSION_ERR);
+        }
 
 	stat = dodecode(infile, a, *nx, *ny, nbitplanes);
 	/*
@@ -1100,9 +1127,10 @@ char tmagic[2];
 	return(stat);
 }
 /*  ############################################################################  */
-static int decode64(unsigned char *infile, LONGLONG *a, int na, int *nx, int *ny, int *scale)
+static int decode64(unsigned char *infile, long insize, LONGLONG *a, int na, int *nx, int *ny, int *scale)
 /*
 char *infile;				 input file							
+long insize;                             length of infile array							
 LONGLONG  *a;				 address of output array [nx][ny]
 int  na;                                 number of ints allocated for output array		
 int  *nx,*ny;				 dimensions of image					
@@ -1117,11 +1145,19 @@ char tmagic[2];
 	/* initialize the byte read position to the beginning of the array */;
 	nextchar = 0;
 	
+        inputBuffSize = insize;
+        inputBuffErr = 0;
+        
 	/*
 	 * File starts either with special 2-byte magic code or with
 	 * FITS keyword "SIMPLE  ="
 	 */
 	qread(infile, tmagic, sizeof(tmagic));
+        if (inputBuffErr)
+        {
+           ffpmsg("decode64: attempt to read past end of input buffer");
+           return(DATA_DECOMPRESSION_ERR);
+        }
 	/*
 	 * check for correct magic code value
 	 */
@@ -1133,7 +1169,16 @@ char tmagic[2];
 	*ny =readint(infile);				/* y size of image			*/
 	*scale=readint(infile);				/* scale factor for digitization	*/
 	
-        if ((*ny)==0 || (*nx) > INT_MAX/(*ny)) {
+        if (inputBuffErr)
+        {
+           ffpmsg("decode64: attempt to read past end of input buffer");
+           return(DATA_DECOMPRESSION_ERR);
+        }
+        if ((*nx) <= 0 || (*ny) <= 0) {
+                ffpmsg("neg or zero nx,ny value during decompression");
+                return(DATA_DECOMPRESSION_ERR);
+        }        
+        if ((*nx) > INT_MAX/(*ny)) {
                 ffpmsg("numerical overflow during decompression");
                 return(DATA_DECOMPRESSION_ERR);
         }
@@ -1147,6 +1192,11 @@ char tmagic[2];
 	/* # bits in quadrants	*/
 
 	qread(infile, (char *) nbitplanes, sizeof(nbitplanes));
+        if (inputBuffErr)
+        {
+           ffpmsg("decode64: attempt to read past end of input buffer");
+           return(DATA_DECOMPRESSION_ERR);
+        }
 
 	stat = dodecode64(infile, a, *nx, *ny, nbitplanes);
 	/*
@@ -1216,6 +1266,11 @@ int i, nel, nx2, ny2, stat;
 		ffpmsg("dodecode: bad bit plane values");
 		return(DATA_DECOMPRESSION_ERR);
 	}
+        if (inputBuffErr)
+        {
+           ffpmsg("dodecode: attempt to read past end of input buffer");
+           return(DATA_DECOMPRESSION_ERR);
+        }
 	/*
 	 * now get the sign bits
 	 * Re-initialize bit input
@@ -1228,6 +1283,12 @@ int i, nel, nx2, ny2, stat;
 			if (input_bit(infile)) a[i] = -a[i];
 		}
 	}
+        if (inputBuffErr)
+        {
+           ffpmsg("dodecode: attempt to read past end of input buffer");
+           return(DATA_DECOMPRESSION_ERR);
+        }
+
 	return(0);
 }
 /*  ############################################################################  */
@@ -1275,6 +1336,11 @@ int i, nel, nx2, ny2, stat;
 		ffpmsg("dodecode64: bad bit plane values");
 		return(DATA_DECOMPRESSION_ERR);
 	}
+        if (inputBuffErr)
+        {
+           ffpmsg("dodecode64: attempt to read past end of input buffer");
+           return(DATA_DECOMPRESSION_ERR);
+        }
 	/*
 	 * now get the sign bits
 	 * Re-initialize bit input
@@ -1285,6 +1351,11 @@ int i, nel, nx2, ny2, stat;
 			if (input_bit(infile) != 0) a[i] = -a[i];
 		}
 	}
+        if (inputBuffErr)
+        {
+           ffpmsg("dodecode64: attempt to read past end of input buffer");
+           return(DATA_DECOMPRESSION_ERR);
+        }
 	return(0);
 }
 
@@ -1345,12 +1416,24 @@ unsigned char *scratch;
 		 * Was bitplane was quadtree-coded or written directly?
 		 */
 		b = input_nybble(infile);
+                if (inputBuffErr)
+                {
+                   free(scratch);
+                   ffpmsg("qtree_decode: attempt to read past end of input buffer");
+                   return(DATA_DECOMPRESSION_ERR);
+                }
 
 		if(b == 0) {
 			/*
 			 * bit map was written directly
 			 */
 			read_bdirect(infile,a,n,nqx,nqy,scratch,bit);
+                        if (inputBuffErr)
+                        {
+                           free(scratch);
+                           ffpmsg("qtree_decode: attempt to read past end of input buffer");
+                           return(DATA_DECOMPRESSION_ERR);
+                        }
 		} else if (b != 0xf) {
 			free(scratch);
 			ffpmsg("qtree_decode: bad format code");
@@ -1362,6 +1445,12 @@ unsigned char *scratch;
 			 * read first code
 			 */
 			scratch[0] = input_huffman(infile);
+                        if (inputBuffErr)
+                        {
+                           free(scratch);
+                           ffpmsg("qtree_decode: attempt to read past end of input buffer");
+                           return(DATA_DECOMPRESSION_ERR);
+                        }
 			/*
 			 * now do log2n expansions, reading codes from file as necessary
 			 */
@@ -1382,6 +1471,13 @@ unsigned char *scratch;
 				if (nfy <= c) { ny -= 1; } else { nfy -= c; }
 				qtree_expand(infile,scratch,nx,ny,scratch);
 			}
+                        if (inputBuffErr)
+                        {
+                           free(scratch);
+                           ffpmsg("qtree_decode: attempt to read past end of input buffer");
+                           return(DATA_DECOMPRESSION_ERR);
+                        }
+                        
 			/*
 			 * now copy last set of 4-bit codes to bitplane bit of array a
 			 */
@@ -1436,12 +1532,24 @@ unsigned char *scratch;
 		 * Was bitplane was quadtree-coded or written directly?
 		 */
 		b = input_nybble(infile);
+                if (inputBuffErr)
+                {
+                   free(scratch);
+                   ffpmsg("qtree_decode64: attempt to read past end of input buffer");
+                   return(DATA_DECOMPRESSION_ERR);
+                }
 
 		if(b == 0) {
 			/*
 			 * bit map was written directly
 			 */
 			read_bdirect64(infile,a,n,nqx,nqy,scratch,bit);
+                        if (inputBuffErr)
+                        {
+                           free(scratch);
+                           ffpmsg("qtree_decode64: attempt to read past end of input buffer");
+                           return(DATA_DECOMPRESSION_ERR);
+                        }
 		} else if (b != 0xf) {
 			free(scratch);
 			ffpmsg("qtree_decode64: bad format code");
@@ -1453,6 +1561,12 @@ unsigned char *scratch;
 			 * read first code
 			 */
 			scratch[0] = input_huffman(infile);
+                        if (inputBuffErr)
+                        {
+                           free(scratch);
+                           ffpmsg("qtree_decode64: attempt to read past end of input buffer");
+                           return(DATA_DECOMPRESSION_ERR);
+                        }
 			/*
 			 * now do log2n expansions, reading codes from file as necessary
 			 */
@@ -1473,6 +1587,13 @@ unsigned char *scratch;
 				if (nfy <= c) { ny -= 1; } else { nfy -= c; }
 				qtree_expand(infile,scratch,nx,ny,scratch);
 			}
+                        if (inputBuffErr)
+                        {
+                           free(scratch);
+                           ffpmsg("qtree_decode64: attempt to read past end of input buffer");
+                           return(DATA_DECOMPRESSION_ERR);
+                        }
+                        
 			/*
 			 * now copy last set of 4-bit codes to bitplane bit of array a
 			 */
@@ -2438,7 +2559,9 @@ unsigned char b[4];
 	 *  in the compressed file, so it doesn't have to be 
 	 *  super-efficient
 	 */
-	for (i=0; i<4; i++) qread(infile,(char *) &b[i],1);
+	for (i=0; i<4; i++) {
+           qread(infile,(char *) &b[i],1);
+        }
 	a = b[0];
 	for (i=1; i<4; i++) a = (a<<8) + b[i];
 	return(a);
@@ -2474,8 +2597,13 @@ static void qread(unsigned char *file, char buffer[], int n)
      *
      */
 
-    memcpy(buffer, &file[nextchar], n);
-    nextchar += n;
+    if (nextchar+n > inputBuffSize)
+       inputBuffErr = 1;
+    else
+    {
+       memcpy(buffer, &file[nextchar], n);
+       nextchar += n;
+    }
 }
 
 /*  ############################################################################  */
@@ -2509,7 +2637,11 @@ static void start_inputing_bits(void)
 static int input_bit(unsigned char *infile)
 {
 	if (bits_to_go == 0) {			/* Read the next byte if no	*/
-
+                if (nextchar >= inputBuffSize)
+                {
+                   inputBuffErr = 1;
+                   return 0;
+                }
 		buffer2 = infile[nextchar];
 		nextchar++;
 		
@@ -2534,7 +2666,11 @@ static int input_nbits(unsigned char *infile, int n)
 		/*
 		 * need another byte's worth of bits
 		 */
-
+                if (nextchar >= inputBuffSize)
+                {
+                   inputBuffErr = 1;
+                   return 0;
+                }
 		buffer2 = (buffer2<<8) | (int) infile[nextchar];
 		nextchar++;
 		bits_to_go += 8;
@@ -2557,7 +2693,11 @@ static int input_nybble(unsigned char *infile)
 		/*
 		 * need another byte's worth of bits
 		 */
-
+                if (nextchar >= inputBuffSize)
+                {
+                   inputBuffErr = 1;
+                   return 0;
+                }
 		buffer2 = (buffer2<<8) | (int) infile[nextchar];
 		nextchar++;
 		bits_to_go += 8;
@@ -2591,6 +2731,11 @@ if (bits_to_go != 8) input_nbits(infile, bits_to_go);
 		   already have 2 full nybbles in buffer2, so 
 		   backspace the infile array to reuse last char
 		*/
+                if (nextchar <= 0)
+                {
+                   inputBuffErr = 1;
+                   return 0;
+                }
 		nextchar--;
 		bits_to_go = 0;
 	}
@@ -2609,6 +2754,11 @@ if (bits_to_go != 8) input_nbits(infile, bits_to_go);
 		/*
 		 * refill the buffer with next byte
 		 */
+                if (nextchar >= inputBuffSize)
+                {
+                   inputBuffErr = 1;
+                   return 0;
+                }
 		buffer2 = (buffer2<<8) | (int) infile[nextchar];
 		nextchar++;
 		array[kk]     = (int) ((buffer2>>4) & 15);
@@ -2622,6 +2772,11 @@ if (bits_to_go != 8) input_nbits(infile, bits_to_go);
 		/*
 		 * refill the buffer with next byte
 		 */
+                if (nextchar >= inputBuffSize)
+                {
+                   inputBuffErr = 1;
+                   return 0;
+                }
 		buffer2 = (buffer2<<8) | (int) infile[nextchar];
 		nextchar++;
 		array[kk]     = (int) ((buffer2>>shift1) & 15);
