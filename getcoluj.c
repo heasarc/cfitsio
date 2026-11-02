@@ -3012,18 +3012,18 @@ int fffi2u8(short *input,         /* I - array of values to be converted     */
             {
                 dvalue = input[ii] * scale + zero;
 
-                if (dvalue < DLONGLONG_MIN)
+                if (dvalue < 0)
                 {
                     *status = OVERFLOW_ERR;
-                    output[ii] = LONGLONG_MIN;
+                    output[ii] = 0;
                 }
-                else if (dvalue > DLONGLONG_MAX)
+                else if (dvalue >= 18446744073709551616.)  /* 2^64 */
                 {
                     *status = OVERFLOW_ERR;
-                    output[ii] = LONGLONG_MAX;
+                    output[ii] = UINT64_MAX;
                 }
                 else
-                    output[ii] = (LONGLONG) dvalue;
+                    output[ii] = (ULONGLONG) dvalue;
             }
         }
     }
@@ -3041,8 +3041,15 @@ int fffi2u8(short *input,         /* I - array of values to be converted     */
                     else
                         nullarray[ii] = 1;
                 }
+	        else if (input[ii] < 0)
+		{
+                   *status = OVERFLOW_ERR;
+                    output[ii] = 0;
+                }
                 else
-                    output[ii] = (LONGLONG) input[ii];
+		{
+                    output[ii] = (ULONGLONG) input[ii];
+		}
             }
         }
         else                  /* must scale the data */
@@ -3061,18 +3068,18 @@ int fffi2u8(short *input,         /* I - array of values to be converted     */
                 {
                     dvalue = input[ii] * scale + zero;
 
-                    if (dvalue < DLONGLONG_MIN)
+                    if (dvalue < 0)
                     {
                         *status = OVERFLOW_ERR;
-                        output[ii] = LONGLONG_MIN;
+                        output[ii] = 0;
                     }
-                    else if (dvalue > DLONGLONG_MAX)
+                    else if (dvalue >= 18446744073709551616.)  /* 2^64 */
                     {
                         *status = OVERFLOW_ERR;
-                        output[ii] = LONGLONG_MAX;
+                        output[ii] = UINT64_MAX;
                     }
                     else
-                        output[ii] = (LONGLONG) dvalue;
+                        output[ii] = (ULONGLONG) dvalue;
                 }
             }
         }
