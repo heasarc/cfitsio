@@ -604,7 +604,7 @@ static int iraftofits (
     char *pixname, *newpixname, *bang, *chead;
     char *fitsheader;
     int nblock, nlines;
-    char *fhead, *fhead1, *fp, endline[81];
+    char *fhead, *fhead1, *fheadLimit, *fp, endline[81];
     char irafchar;
     char fitsline[81];
     int pixtype;
@@ -659,7 +659,11 @@ static int iraftofits (
         ffpmsg(hdrname);
 	return (*status = FILE_NOT_OPENED);
 	}
-
+    /* This is the highest position from which a card created from the user
+        portion of the IRAF header may be entered.  The subtraction of 80
+        is to leave room for the END card. */
+    fheadLimit = fitsheader + (*nbfits/2880)*2880 - 80;
+    
     fhead = fitsheader;
     *buffptr = fitsheader;
     (void)strncpy (fitsheader, endline, 80);
@@ -818,6 +822,15 @@ static int iraftofits (
 
     /* Save image offset from star of pixel file */
     pixoff = irafgeti4 (irafheader, impixoff);
+    /* pixoff must not be < 6 at this stage.  Otherwise later in the
+     irafrdimage function, a value of (pixoff -1)*2 < 10 is used to
+     allocate a string passed to pix_version that is expected to be
+     at least 10 bytes.  */
+    if (pixoff < 6 || pixoff > INT_MAX/2) {
+       ffpmsg("IRAF header has invalid pixel offset");
+       ffpmsg(hdrname);
+       return (*status = FILE_NOT_OPENED);
+    }
     pixoff = (pixoff - 1) * 2;
     hputi4 (fitsheader, "PIXOFF", pixoff);
     hputcom (fitsheader,"PIXOFF", "IRAF .pix pixel offset (Do not change!)");
@@ -849,6 +862,11 @@ static int iraftofits (
 	    if (irafchar == 0)
 		break;
 	    else if (irafchar == 10) {
+                if (fhead >= fheadLimit)
+                {
+                   ffpmsg("IRAF user area truncated: too many header lines.");
+                   break;
+                }
 		(void)strncpy (fhead, fitsline, 80);
 		/* fprintf (stderr,"%80s\n",fitsline); */
 		if (strncmp (fitsline, "OBJECT ", 7) != 0) {
@@ -861,14 +879,19 @@ static int iraftofits (
 	    else {
 		if (j > 80) {
 		    if (strncmp (fitsline, "OBJECT ", 7) != 0) {
+                        if (fhead >= fheadLimit)
+                        {
+                           ffpmsg("IRAF user area truncated: too many header lines.");
+                           break;
+                        }
 			(void)strncpy (fhead, fitsline, 80);
 			/* fprintf (stderr,"%80s\n",fitsline); */
-			j = 9;
 			fhead = fhead + 80;
-			}
+		    }
 		    for (k = 0; k < 80; k++)
 			fitsline[k] = ' ';
-		    }
+		    j = 9;
+		}
 		if (irafchar > 32 && irafchar < 127)
 		    fitsline[j] = irafchar;
 		j++;
@@ -891,6 +914,11 @@ static int iraftofits (
 		break;
 	    else if (irafchar == 10) {
 		if (strncmp (fitsline, "OBJECT ", 7) != 0) {
+                    if (fhead >= fheadLimit)
+                    {
+                       ffpmsg("IRAF user area truncated: too many header lines.");
+                       break;
+                    }
 		    (void)strncpy (fhead, fitsline, 80);
 		    fhead = fhead + 80;
 		    }
@@ -902,14 +930,19 @@ static int iraftofits (
 	    else {
 		if (j > 80) {
 		    if (strncmp (fitsline, "OBJECT ", 7) != 0) {
+                        if (fhead >= fheadLimit)
+                        {
+                           ffpmsg("IRAF user area truncated: too many header lines.");
+                           break;
+                        }
 			(void)strncpy (fhead, fitsline, 80);
-			j = 9;
 			fhead = fhead + 80;
-			}
+		    }
 		    /* fprintf (stderr,"%80s\n",fitsline); */
 		    for (k = 0; k < 80; k++)
 			fitsline[k] = ' ';
-		    }
+		    j = 9;
+		}
 		if (irafchar > 32 && irafchar < 127)
 		    fitsline[j] = irafchar;
 		j++;
@@ -977,10 +1010,14 @@ static int getirafpixname (
 	  }
 	}
 	
-    if ((bang = strchr (pixname, '!')) != NULL )
-	strcpy(pixfilename,bang+1);
-    else
-	strcpy(pixfilename,pixname);
+    if ((bang = strchr (pixname, '!')) != NULL ) {
+	strncpy(pixfilename,bang+1,SZ_IM2PIXFILE);
+        pixfilename[SZ_IM2PIXFILE]=0;
+    }
+    else {
+	strncpy(pixfilename,pixname,SZ_IM2PIXFILE);
+        pixfilename[SZ_IM2PIXFILE]=0;
+    }
 
     free (pixname);
 
@@ -1050,9 +1087,12 @@ const char	*hdrname)	/* IRAF image header file pathname */
 	/* load entire header name string into name buffer */
 	(void)strncpy (newpixname, hdrname, SZ_IM2PIXFILE);
 	len = strlen (newpixname);
-	newpixname[len-3] = 'p';
-	newpixname[len-2] = 'i';
-	newpixname[len-1] = 'x';
+        if (len >= 3)
+	   newpixname[len-3] = 'p';
+        if (len >= 2)
+	   newpixname[len-2] = 'i';
+        if (len >= 1)
+	   newpixname[len-1] = 'x';
 	}
 
     return (newpixname);
