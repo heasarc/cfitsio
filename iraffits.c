@@ -500,6 +500,12 @@ static int irafrdimage (
 	nbr = 0;
 	if (naxis2 == 1 && naxis3 > 1)
 	    naxis2 = naxis3;
+            
+        if ((double)naxis2*nbaxis > nbimage) {
+           ffpmsg("IRAFRIMAGE: image dimension and image size mismatch.");
+	   fclose (fd);
+	   return (*status = FILE_NOT_OPENED);
+        }    
 	for (i = 0; i < naxis2; i++) {
 	    nbl = fread (linebuff, 1, nbaxis, fd);
 	    nbr = nbr + nbl;
