@@ -36,8 +36,8 @@ The following modifications have been made to the original code:
 #include <stdlib.h>
 #include "fitsio2.h"
 
-static long noutchar;
-static long noutmax;
+static FF_THREAD_LOCAL long noutchar;
+static FF_THREAD_LOCAL long noutmax;
 
 static int htrans(int a[],int nx,int ny);
 static void digitize(int a[], int nx, int ny, int scale);
@@ -112,12 +112,10 @@ int fits_hcompress(int *a, int ny, int nx, int scale, char *output,
 
   /* encode and write to output array */
 
-  FFLOCK;
   noutmax = *nbytes;  /* input value is the allocated size of the array */
   *nbytes = 0;  /* reset */
 
   stat = encode(output, nbytes, a, nx, ny, scale);
-  FFUNLOCK;
   
   *status = stat;
   return(*status);
@@ -159,12 +157,10 @@ int fits_hcompress64(LONGLONG *a, int ny, int nx, int scale, char *output,
 
   /* encode and write to output array */
 
-  FFLOCK;
   noutmax = *nbytes;  /* input value is the allocated size of the array */
   *nbytes = 0;  /* reset */
 
   stat = encode64(output, nbytes, a, nx, ny, scale);
-  FFUNLOCK;
 
   *status = stat;
   return(*status);
@@ -1083,12 +1079,12 @@ int nx2, ny2, stat;
 /* BIT OUTPUT ROUTINES */
 
 
-static LONGLONG bitcount;
+static FF_THREAD_LOCAL LONGLONG bitcount;
 
 /* THE BIT BUFFER */
 
-static int buffer2;			/* Bits buffered for output	*/
-static int bits_to_go2;			/* Number of bits free in buffer */
+static FF_THREAD_LOCAL int buffer2;			/* Bits buffered for output	*/
+static FF_THREAD_LOCAL int bits_to_go2;			/* Number of bits free in buffer */
 
 
 /* ######################################################################### */
@@ -1270,7 +1266,7 @@ static int ncode[16] =
 /*
  * variables for bit output to buffer when Huffman coding
  */
-static int bitbuffer, bits_to_go3;
+static FF_THREAD_LOCAL int bitbuffer, bits_to_go3;
 
 /*
  * macros to write out 4-bit nybble, Huffman code for this value

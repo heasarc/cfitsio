@@ -46,9 +46,9 @@ The following modifications have been made to the original code:
 #define max(a,b)        (((a)>(b))?(a):(b))
 #endif
 
-static long nextchar;
-static long inputBuffSize=0;
-static int inputBuffErr=0;
+static FF_THREAD_LOCAL long nextchar;
+static FF_THREAD_LOCAL long inputBuffSize=0;
+static FF_THREAD_LOCAL int inputBuffErr=0;
 
 static int decode(unsigned char *infile, long insize, int *a, int na, int *nx, int *ny, int *scale);
 static int decode64(unsigned char *infile, long insize, LONGLONG *a, int na, int *nx, int *ny, int *scale);
@@ -108,9 +108,7 @@ int stat;
 
 	/* decode the input array */
 
-        FFLOCK;  /* decode uses the nextchar global variable */
 	stat = decode(input, insize, a, na, nx, ny, scale);
-        FFUNLOCK;
 
         *status = stat;
 	if (stat) return(*status);
@@ -153,9 +151,7 @@ int fits_hdecompress64(unsigned char *input, long insize, int smooth, LONGLONG *
 
 	/* decode the input array */
 
-        FFLOCK;  /* decode uses the nextchar global variable */
 	stat = decode64(input, insize, a, na, nx, ny, scale);
-        FFUNLOCK;
 
         *status = stat;
 	if (stat) return(*status);
@@ -2617,8 +2613,8 @@ static void qread(unsigned char *file, char buffer[], int n)
 
 /* THE BIT BUFFER */
 
-static int buffer2;			/* Bits waiting to be input	*/
-static int bits_to_go;			/* Number of bits still in buffer */
+static FF_THREAD_LOCAL int buffer2;			/* Bits waiting to be input	*/
+static FF_THREAD_LOCAL int bits_to_go;			/* Number of bits still in buffer */
 
 /* INITIALIZE BIT INPUT */
 
