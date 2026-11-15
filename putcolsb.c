@@ -874,7 +874,7 @@ int ffs1fi8(signed char *input,   /* I - array of values to be converted  */
                 *status = OVERFLOW_ERR;
                 output[ii] = LONGLONG_MIN;
             }
-            else if (dvalue > DLONGLONG_MAX)
+            else if (dvalue >= DLONGLONG_LIMIT)
             {
                 *status = OVERFLOW_ERR;
                 output[ii] = LONGLONG_MAX;

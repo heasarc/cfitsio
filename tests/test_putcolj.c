@@ -2341,6 +2341,48 @@ test_longlong_ascii_table_scaled(void)
 	call_01(ffclos, f);
 }
 
+static void
+test_scaled_longlong_upper_limit(void)
+{
+	/* With TZERO = -2^63, an input of 0 scales to exactly 2^63 on disk,
+	   which does not fit in a K column and must clamp to LLONG_MAX with
+	   NUM_OVERFLOW.  -1024 scales to 2^63 - 1024, the largest double
+	   below 2^63, and must be stored exactly.  Exercise both the long
+	   (ffpclj) and LONGLONG (ffpcljj) writers. */
+	fitsfile *f;
+	int status = 0;
+	char *ttype[] = { "J", "JJ" };
+	char *tform[] = { "1K", "1K" };
+	long ldata[] = { 0, -1024 };
+	LONGLONG lldata[] = { 0, -1024 };
+	LONGLONG result[2];
+	int anynull, col;
+
+	call_02(ffinit, &f, "!" test_path);
+	call_04(ffphps, f, BYTE_IMG, 0, NULL);
+	call_08(ffcrtb, f, BINARY_TBL, 2, 2, ttype, tform, NULL, NULL);
+	call_04(fftscl, f, 1, 1.0, -9223372036854775808.0);
+	call_04(fftscl, f, 2, 1.0, -9223372036854775808.0);
+	ffpclj(f, 1, 1, 1, 2, ldata, &status);
+	fail_if(status != NUM_OVERFLOW);
+	status = 0;
+	ffpcljj(f, 2, 1, 1, 2, lldata, &status);
+	fail_if(status != NUM_OVERFLOW);
+	status = 0;
+	call_01(ffclos, f);
+
+	/* read back the raw stored values */
+	call_03(ffopen, &f, test_path, READONLY);
+	call_03(ffmahd, f, 2, NULL);
+	for (col = 1; col <= 2; col++) {
+		call_04(fftscl, f, col, 1.0, 0.0);
+		call_08(ffgcvjj, f, col, 1, 1, 2, 0, result, &anynull);
+		fail_if(result[0] != LLONG_MAX);
+		fail_if(result[1] != 9223372036854774784LL);
+	}
+	call_01(ffclos, f);
+}
+
 int
 main(void)
 {
@@ -2443,6 +2485,7 @@ main(void)
 	test_longlong_to_byte_unscaled_negative();
 	test_longlong_to_byte_unscaled_overflow();
 	test_longlong_to_short_unscaled_underflow();
+	test_scaled_longlong_upper_limit();
 	remove(test_path);
 	return 0;
 }

@@ -9175,7 +9175,9 @@ int ffc2i(const char *cval,   /* I - string representation of the value */
             /* try reading the string as a number */
             if (ffc2dd(sval, &dval, status) <= 0)
             {
-              if (dval > (double) LONG_MAX || dval < (double) LONG_MIN)
+              /* (double) LONG_MAX rounds up to 2^63 when long is 64 bits,
+                 so bound by -LONG_MIN, which is an exact power of 2 */
+              if (dval >= -(double) LONG_MIN || dval < (double) LONG_MIN)
                 *status = NUM_OVERFLOW;
               else
                 *ival = (long) dval;
@@ -9183,7 +9185,7 @@ int ffc2i(const char *cval,   /* I - string representation of the value */
     }
     else if (dtype == 'F')
     {
-            if (dval > (double) LONG_MAX || dval < (double) LONG_MIN)
+            if (dval >= -(double) LONG_MIN || dval < (double) LONG_MIN)
                 *status = NUM_OVERFLOW;
             else
                 *ival = (long) dval;
@@ -9236,7 +9238,7 @@ int ffc2j(const char *cval,     /* I - string representation of the value */
             /* try reading the string as a number */
             if (ffc2dd(sval, &dval, status) <= 0)
             {
-              if (dval > (double) LONGLONG_MAX || dval < (double) LONGLONG_MIN)
+              if (dval >= DLONGLONG_LIMIT || dval < DLONGLONG_MIN)
                 *status = NUM_OVERFLOW;
               else
                 *ival = (LONGLONG) dval;
@@ -9244,7 +9246,7 @@ int ffc2j(const char *cval,     /* I - string representation of the value */
     }
     else if (dtype == 'F')
     {
-            if (dval > (double) LONGLONG_MAX || dval < (double) LONGLONG_MIN)
+            if (dval >= DLONGLONG_LIMIT || dval < DLONGLONG_MIN)
                 *status = NUM_OVERFLOW;
             else
                 *ival = (LONGLONG) dval;
@@ -9297,7 +9299,7 @@ int ffc2uj(const char *cval,     /* I - string representation of the value */
             /* try reading the string as a number */
             if (ffc2dd(sval, &dval, status) <= 0)
             {
-              if (dval > (double)  DULONGLONG_MAX || dval < -0.49)
+              if (dval >= DULONGLONG_LIMIT || dval < -0.49)
                 *status = NUM_OVERFLOW;
               else
                 *ival = (ULONGLONG) dval;
@@ -9305,7 +9307,7 @@ int ffc2uj(const char *cval,     /* I - string representation of the value */
     }
     else if (dtype == 'F')
     {
-            if (dval > (double) DULONGLONG_MAX || dval < -0.49)
+            if (dval >= DULONGLONG_LIMIT || dval < -0.49)
                 *status = NUM_OVERFLOW;
             else
                 *ival = (ULONGLONG) dval;

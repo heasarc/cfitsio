@@ -7,6 +7,7 @@
 #include <string.h>
 #include <math.h>
 #include <float.h>
+#include <limits.h>
 #include "fitsio.h"
 #include "test_macros.h"
 
@@ -1257,7 +1258,7 @@ test_scaled_ascii_column(void)
 }
 
 /*
- * Test unsigned longlong positive overflow. Input > 2*DLONGLONG_MAX
+ * Test unsigned longlong positive overflow. Input >= 2^64
  * overflows
  */
 static void
@@ -1323,6 +1324,104 @@ test_unscaled_longlong_underflow(void)
 	call_01(ffclos, f);
 }
 
+static void
+test_longlong_upper_limit(void)
+{
+	/* 2^63 does not fit in a LONGLONG column and must clamp to
+	   LLONG_MAX with NUM_OVERFLOW; 2^63 - 2^39, the largest float below
+	   2^63, and -2^63 fit and must be written exactly. */
+	fitsfile *f;
+	int status = 0;
+	char *ttype[] = { "LLCOL" };
+	char *tform[] = { "1K" };
+	float data[] = { 9223372036854775808.f, 9223371487098961920.f,
+		-9223372036854775808.f };
+	LONGLONG result[3];
+	int anynull;
+
+	call_02(ffinit, &f, "!" test_path);
+	call_04(ffphps, f, BYTE_IMG, 0, NULL);
+	call_08(ffcrtb, f, BINARY_TBL, 3, 1, ttype, tform, NULL, NULL);
+	ffpcle(f, 1, 1, 1, 3, data, &status);
+	fail_if(status != NUM_OVERFLOW);
+	status = 0;
+	call_01(ffclos, f);
+
+	call_03(ffopen, &f, test_path, READONLY);
+	call_03(ffmahd, f, 2, NULL);
+	call_08(ffgcvjj, f, 1, 1, 1, 3, 0, result, &anynull);
+	fail_if(result[0] != LLONG_MAX);
+	fail_if(result[1] != 9223371487098961920LL);
+	fail_if(result[2] != LLONG_MIN);
+	call_01(ffclos, f);
+}
+
+static void
+test_scaled_longlong_upper_limit(void)
+{
+	/* With TSCAL = 2, 2^64 scales to exactly 2^63 on disk and must
+	   overflow; 2 * (2^63 - 2^39) scales to 2^63 - 2^39 and fits. */
+	fitsfile *f;
+	int status = 0;
+	char *ttype[] = { "LLCOL" };
+	char *tform[] = { "1K" };
+	float data[] = { 18446744073709551616.f, 18446742974197923840.f };
+	LONGLONG result[2];
+	int anynull;
+
+	call_02(ffinit, &f, "!" test_path);
+	call_04(ffphps, f, BYTE_IMG, 0, NULL);
+	call_08(ffcrtb, f, BINARY_TBL, 2, 1, ttype, tform, NULL, NULL);
+	call_04(fftscl, f, 1, 2.0, 0.0);
+	ffpcle(f, 1, 1, 1, 2, data, &status);
+	fail_if(status != NUM_OVERFLOW);
+	status = 0;
+	call_01(ffclos, f);
+
+	/* read back the raw stored values */
+	call_03(ffopen, &f, test_path, READONLY);
+	call_03(ffmahd, f, 2, NULL);
+	call_04(fftscl, f, 1, 1.0, 0.0);
+	call_08(ffgcvjj, f, 1, 1, 1, 2, 0, result, &anynull);
+	fail_if(result[0] != LLONG_MAX);
+	fail_if(result[1] != 9223371487098961920LL);
+	call_01(ffclos, f);
+}
+
+static void
+test_unsigned_longlong_upper_limit(void)
+{
+	/* Writing to an unsigned (TZERO = 2^63) K column: values in
+	   [2^63, 2^64) must be stored exactly, and 2^64 must clamp to
+	   ULLONG_MAX with NUM_OVERFLOW. */
+	fitsfile *f;
+	int status = 0;
+	char *ttype[] = { "ULLCOL" };
+	char *tform[] = { "1K" };
+	float data[] = { 9999999980506447872.f, 18446742974197923840.f,
+		18446744073709551616.f };
+	ULONGLONG result[3];
+	int anynull;
+
+	call_02(ffinit, &f, "!" test_path);
+	call_04(ffphps, f, BYTE_IMG, 0, NULL);
+	call_08(ffcrtb, f, BINARY_TBL, 3, 1, ttype, tform, NULL, NULL);
+	call_02(ffprec, f, "TZERO1  =  9223372036854775808");
+	call_04(fftscl, f, 1, 1.0, 9223372036854775808.0);
+	ffpcle(f, 1, 1, 1, 3, data, &status);
+	fail_if(status != NUM_OVERFLOW);
+	status = 0;
+	call_01(ffclos, f);
+
+	call_03(ffopen, &f, test_path, READONLY);
+	call_03(ffmahd, f, 2, NULL);
+	call_08(ffgcvujj, f, 1, 1, 1, 3, 0, result, &anynull);
+	fail_if(result[0] != 9999999980506447872ULL);
+	fail_if(result[1] != 18446742974197923840ULL);
+	fail_if(result[2] != ULLONG_MAX);
+	call_01(ffclos, f);
+}
+
 int
 main(void)
 {
@@ -1380,6 +1479,9 @@ main(void)
 	test_unsigned_longlong_positive_overflow();
 	test_scaled_ascii_overflow();
 	test_unscaled_longlong_underflow();
+	test_longlong_upper_limit();
+	test_scaled_longlong_upper_limit();
+	test_unsigned_longlong_upper_limit();
 	remove(test_path);
 
 	return 0;

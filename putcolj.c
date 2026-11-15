@@ -901,7 +901,7 @@ int ffi4fi8(long *input,       /* I - array of values to be converted  */
                 *status = OVERFLOW_ERR;
                 output[ii] = LONGLONG_MIN;
             }
-            else if (dvalue > DLONGLONG_MAX)
+            else if (dvalue >= DLONGLONG_LIMIT)
             {
                 *status = OVERFLOW_ERR;
                 output[ii] = LONGLONG_MAX;
@@ -1919,7 +1919,7 @@ int ffi8fi8(LONGLONG *input,   /* I - array of values to be converted  */
                 *status = OVERFLOW_ERR;
                 output[ii] = LONGLONG_MIN;
             }
-            else if (dvalue > DLONGLONG_MAX)
+            else if (dvalue >= DLONGLONG_LIMIT)
             {
                 *status = OVERFLOW_ERR;
                 output[ii] = LONGLONG_MAX;

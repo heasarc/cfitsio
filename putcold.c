@@ -933,12 +933,13 @@ int ffr8fi8(double *input,     /* I - array of values to be converted  */
               *status = OVERFLOW_ERR;
               output[ii] = LONGLONG_MIN;
             }
-	    else if (input[ii] > 2.* DLONGLONG_MAX)
+	    else if (input[ii] >= DULONGLONG_LIMIT)
             {
                 *status = OVERFLOW_ERR;
                 output[ii] = LONGLONG_MAX;
             } else {
-              output[ii] =  ((LONGLONG) input[ii]) ^ 0x8000000000000000;
+              /* cast via ULONGLONG: values >= 2^63 do not fit in LONGLONG */
+              output[ii] =  (LONGLONG) (((ULONGLONG) input[ii]) ^ 0x8000000000000000);
             }
         }
     }
@@ -951,7 +952,7 @@ int ffr8fi8(double *input,     /* I - array of values to be converted  */
                 *status = OVERFLOW_ERR;
                 output[ii] = LONGLONG_MIN;
             }
-            else if (input[ii] > DLONGLONG_MAX)
+            else if (input[ii] >= DLONGLONG_LIMIT)
             {
                 *status = OVERFLOW_ERR;
                 output[ii] = LONGLONG_MAX;
@@ -971,7 +972,7 @@ int ffr8fi8(double *input,     /* I - array of values to be converted  */
                 *status = OVERFLOW_ERR;
                 output[ii] = LONGLONG_MIN;
             }
-            else if (dvalue > DLONGLONG_MAX)
+            else if (dvalue >= DLONGLONG_LIMIT)
             {
                 *status = OVERFLOW_ERR;
                 output[ii] = LONGLONG_MAX;

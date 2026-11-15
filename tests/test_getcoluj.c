@@ -1286,6 +1286,153 @@ test_ujj_double_overflow(void)
 	call_01(ffclos, f);
 }
 
+static void
+test_ujj_short_negative_with_tnull(void)
+{
+	/* A non-null negative short read with null checking enabled
+	   (TNULL defined, nulval != 0) must clamp to 0 with NUM_OVERFLOW,
+	   not wrap to 2^64 - 5. */
+	fitsfile *f;
+	int status = 0;
+	char *ttype[] = { "ICOL" };
+	char *tform[] = { "1I" };
+	short data[] = { -5, 100, -100 };
+	ULONGLONG result[3];
+	int anynull = 0;
+
+	call_02(ffinit, &f, "!" test_path);
+	call_04(ffphps, f, BYTE_IMG, 0, NULL);
+	call_08(ffcrtb, f, BINARY_TBL, 3, 1, ttype, tform, NULL, NULL);
+	call_04(ffpkyj, f, "TNULL1", -100, NULL);
+	call_06(ffpcli, f, 1, 1, 1, 3, data);
+	call_01(ffclos, f);
+
+	call_03(ffopen, &f, test_path, READONLY);
+	call_03(ffmahd, f, 2, NULL);
+	ffgcvujj(f, 1, 1, 1, 3, 9999, result, &anynull, &status);
+	fail_if(status != NUM_OVERFLOW);
+	status = 0;
+	fail_if(result[0] != 0);
+	fail_if(result[1] != 100);
+	fail_if(result[2] != 9999);
+	fail_if(anynull != 1);
+	call_01(ffclos, f);
+}
+
+static void
+test_ujj_short_scaled_negative(void)
+{
+	/* TZERO = -1000: raw 0 scales to -1000 (must clamp to 0) and raw
+	   2000 scales to +1000.  Read both without (nulval = 0) and with
+	   (nulval != 0) null checking. */
+	fitsfile *f;
+	int status = 0;
+	char *ttype[] = { "ICOL" };
+	char *tform[] = { "1I" };
+	short data[] = { 0, 2000 };
+	ULONGLONG result[2];
+	ULONGLONG nulval[] = { 0, 9999 };
+	int anynull, ii;
+
+	call_02(ffinit, &f, "!" test_path);
+	call_04(ffphps, f, BYTE_IMG, 0, NULL);
+	call_08(ffcrtb, f, BINARY_TBL, 2, 1, ttype, tform, NULL, NULL);
+	call_04(ffpkyj, f, "TNULL1", -100, NULL);
+	call_05(ffpkyg, f, "TZERO1", -1000., 1, NULL);
+	call_04(fftscl, f, 1, 1., 0.);
+	call_06(ffpcli, f, 1, 1, 1, 2, data);
+	call_01(ffclos, f);
+
+	call_03(ffopen, &f, test_path, READONLY);
+	call_03(ffmahd, f, 2, NULL);
+	for (ii = 0; ii < 2; ii++) {
+		result[0] = result[1] = 42;
+		ffgcvujj(f, 1, 1, 1, 2, nulval[ii], result, &anynull,
+			&status);
+		fail_if(status != NUM_OVERFLOW);
+		status = 0;
+		fail_if(result[0] != 0);
+		fail_if(result[1] != 1000);
+	}
+	call_01(ffclos, f);
+}
+
+static void
+test_ujj_long_scaled_above_llong_max(void)
+{
+	/* TZERO = 1e19 puts the scaled value above LLONG_MAX but within
+	   ULONGLONG range; it must be returned exactly, without error. */
+	fitsfile *f;
+	int status = 0;
+	char *ttype[] = { "JCOL" };
+	char *tform[] = { "1J" };
+	long data[] = { 0, 4096 };
+	ULONGLONG result[2];
+	int anynull;
+
+	call_02(ffinit, &f, "!" test_path);
+	call_04(ffphps, f, BYTE_IMG, 0, NULL);
+	call_08(ffcrtb, f, BINARY_TBL, 2, 1, ttype, tform, NULL, NULL);
+	call_02(ffprec, f, "TZERO1  =                  1E19");
+	call_04(fftscl, f, 1, 1., 0.);
+	call_06(ffpclj, f, 1, 1, 1, 2, data);
+	call_01(ffclos, f);
+
+	call_03(ffopen, &f, test_path, READONLY);
+	call_03(ffmahd, f, 2, NULL);
+	call_08(ffgcvujj, f, 1, 1, 1, 2, 0, result, &anynull);
+	fail_if(result[0] != 10000000000000000000ULL);
+	fail_if(result[1] != 10000000000000004096ULL);
+	call_01(ffclos, f);
+}
+
+static void
+test_ujj_scaled_upper_limit(void)
+{
+	/* TZERO = 2^64 (written as an exact card) scales raw 0 to exactly
+	   2^64, which does not fit in a ULONGLONG and must clamp to
+	   ULLONG_MAX with NUM_OVERFLOW for every column type.  Raw -2048
+	   gives 2^64 - 2048, the largest double below 2^64, which fits and
+	   must be returned exactly. */
+	fitsfile *f;
+	int status = 0;
+	char *ttype[] = { "B", "I", "J", "K", "E", "D" };
+	char *tform[] = { "1B", "1I", "1J", "1K", "1E", "1D" };
+	double data[] = { 0., -2048. };
+	char card[FLEN_CARD];
+	ULONGLONG result;
+	int anynull, col;
+
+	call_02(ffinit, &f, "!" test_path);
+	call_04(ffphps, f, BYTE_IMG, 0, NULL);
+	call_08(ffcrtb, f, BINARY_TBL, 2, 6, ttype, tform, NULL, NULL);
+	for (col = 1; col <= 6; col++) {
+		snprintf(card, FLEN_CARD,
+			"TZERO%d  =        18446744073709551616.", col);
+		call_02(ffprec, f, card);
+		call_04(fftscl, f, col, 1., 0.);
+		/* unsigned byte column cannot hold -2048 */
+		call_06(ffpcld, f, col, 1, 1, col == 1 ? 1 : 2, data);
+	}
+	call_01(ffclos, f);
+
+	call_03(ffopen, &f, test_path, READONLY);
+	call_03(ffmahd, f, 2, NULL);
+	for (col = 1; col <= 6; col++) {
+		result = 42;
+		ffgcvujj(f, col, 1, 1, 1, 0, &result, &anynull, &status);
+		fail_if(status != NUM_OVERFLOW);
+		status = 0;
+		fail_if(result != ULLONG_MAX);
+
+		if (col == 1)
+			continue;
+		call_08(ffgcvujj, f, col, 2, 1, 1, 0, &result, &anynull);
+		fail_if(result != 18446744073709549568ULL);
+	}
+	call_01(ffclos, f);
+}
+
 int
 main(void)
 {
@@ -1340,6 +1487,10 @@ main(void)
 	test_ujj_longlong_overflow();
 	test_ujj_float_overflow();
 	test_ujj_double_overflow();
+	test_ujj_short_negative_with_tnull();
+	test_ujj_short_scaled_negative();
+	test_ujj_long_scaled_above_llong_max();
+	test_ujj_scaled_upper_limit();
 
 	remove(test_path);
 
