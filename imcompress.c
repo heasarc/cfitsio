@@ -181,6 +181,7 @@ int fits_init_randoms(void) {
     double a = 16807.0;
     double m = 2147483647.0;
     double temp, seed;
+    float *rand_value;
 
     FFLOCK;
  
@@ -191,9 +192,9 @@ int fits_init_randoms(void) {
 
     /* allocate array for the random number sequence */
     /* THIS MEMORY IS NEVER FREED */
-    fits_rand_value = calloc(N_RANDOM, sizeof(float));
+    rand_value = calloc(N_RANDOM, sizeof(float));
 
-    if (!fits_rand_value) {
+    if (!rand_value) {
         FFUNLOCK;
 	return(MEMORY_ALLOCATION);
     }
@@ -211,8 +212,13 @@ int fits_init_randoms(void) {
     for (ii = 0; ii < N_RANDOM; ii++) {
         temp = a * seed;
 	seed = temp -m * ((int) (temp / m) );
-	fits_rand_value[ii] = (float) (seed / m);
+	rand_value[ii] = (float) (seed / m);
     }
+
+    /* Only make the array visible once it is complete: the callers test
+       fits_rand_value without holding the lock, so another thread must
+       never be able to see a partly filled array. */
+    fits_rand_value = rand_value;
 
     FFUNLOCK;
 
