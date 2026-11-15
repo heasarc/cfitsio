@@ -3978,6 +3978,7 @@ static void Do_Func( ParseData *lParse, Node *this )
 	    this->value.data.dbl = 
 	      angsep_calc(pVals[0].data.dbl, pVals[1].data.dbl,
 			  pVals[2].data.dbl, pVals[3].data.dbl);
+	    break;
 
 	    /*  Min/Max functions taking 1 or 2 arguments  */
 
