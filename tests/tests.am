@@ -166,6 +166,7 @@ CLEANFILES += \
 	test_putcoluj2.fits \
 	test_putcoluk.fits \
 	test_putkey.fits \
+	test_region.fits \
 	test_region.reg \
 	test_scalnull.fits \
 	test_section.fits \
