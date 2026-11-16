@@ -648,6 +648,14 @@ int ffgcdw( fitsfile *fptr,   /* I - FITS file pointer                       */
 
     /* use the TDISPn keyword if it exists */
     ffkeyn("TDISP", colnum, keyname, status);
+    
+    /* Ensure that the search for TFORMn or TDISPn starts from the same
+       location (ie. the beginning) each time.  This is to protect against
+       the odd case where duplicate TFORMn or TDISPn keys may exist, which
+       could then cause this function to return a different value depending
+       on when it's called.
+    */
+    ffmaky(fptr, 1, status);
 
     *width = 0;
     tstatus = 0;
@@ -767,7 +775,7 @@ int ffgcdw( fitsfile *fptr,   /* I - FITS file pointer                       */
 		        /* Deal with possible vector string with repeat / width  by parsing
 		           the TFORM=rAw keyword */
 		        if (ffgtcl(fptr, colnum, &typecode, &repeat, &rwidth, &gstatus) == 0 &&
-			    rwidth >= 1 && rwidth < repeat) {
+			    rwidth >= 1) {
 		          *width = rwidth;
 
 		        } else {
