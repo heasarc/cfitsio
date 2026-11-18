@@ -613,51 +613,37 @@ int ffgcls( fitsfile *fptr,   /* I - FITS file pointer                       */
     return(*status);
 }
 /*--------------------------------------------------------------------------*/
-int ffgcdw( fitsfile *fptr,   /* I - FITS file pointer                       */
-            int  colnum,      /* I - number of column (1 = 1st col)      */
-            int  *width,      /* O - display width                       */
+static int ffgtdw( fitsfile *fptr,   /* I - FITS file pointer                */
+            int  colnum,      /* I - number of column (1 = 1st col)          */
+            int  *width,      /* O - display width from TDISPn, 0 if none    */
             int  *status)     /* IO - error status                           */
 /*
-  Get Column Display Width.
+  Get the display width given by the TDISPn keyword of a column, or 0 if
+  the column has no valid TDISPn keyword.  The keyword search starts from
+  the top of the header, so that the result does not depend on the current
+  header position (e.g., if a header contains more than one TDISPn card,
+  successive calls would otherwise find different cards).
 */
 {
     tcolumn *colptr;
     char *cptr;
-    char message[FLEN_ERRMSG], keyname[FLEN_KEYWORD], dispfmt[FLEN_VALUE];
-    int tcode, hdutype, tstatus, scaled;
+    char keyname[FLEN_KEYWORD], dispfmt[FLEN_VALUE];
+    int tcode, tstatus;
     long testwidth;
-    double tscale;
+
+    *width = 0;
 
     if (*status > 0)  /* inherit input status value if > 0 */
         return(*status);
-
-    if (fptr->HDUposition != (fptr->Fptr)->curhdu)
-        ffmahd(fptr, (fptr->HDUposition) + 1, NULL, status);
-
-    if (colnum < 1 || colnum > (fptr->Fptr)->tfield)
-    {
-        snprintf(message, FLEN_ERRMSG,"Specified column number is out of range: %d",
-                colnum);
-        ffpmsg(message);
-        return(*status = BAD_COL_NUM);
-    }
 
     colptr  = (fptr->Fptr)->tableptr;   /* point to first column */
     colptr += (colnum - 1);     /* offset to correct column structure */
     tcode = abs(colptr->tdatatype);
 
-    /* use the TDISPn keyword if it exists */
-    ffkeyn("TDISP", colnum, keyname, status);
-    
-    /* Ensure that the search for TFORMn or TDISPn starts from the same
-       location (ie. the beginning) each time.  This is to protect against
-       the odd case where duplicate TFORMn or TDISPn keys may exist, which
-       could then cause this function to return a different value depending
-       on when it's called.
-    */
-    ffmaky(fptr, 1, status);
+    ffmaky(fptr, 1, status);    /* search from the top of the header */
 
-    *width = 0;
+    ffkeyn("TDISP", colnum, keyname, status);
+
     tstatus = 0;
     if (ffgkys(fptr, keyname, dispfmt, NULL, &tstatus) == 0)
     {
@@ -688,6 +674,43 @@ int ffgcdw( fitsfile *fptr,   /* I - FITS file pointer                       */
             }
           }
     }
+    return(*status);
+}
+/*--------------------------------------------------------------------------*/
+int ffgcdw( fitsfile *fptr,   /* I - FITS file pointer                       */
+            int  colnum,      /* I - number of column (1 = 1st col)      */
+            int  *width,      /* O - display width                       */
+            int  *status)     /* IO - error status                           */
+/*
+  Get Column Display Width.
+*/
+{
+    tcolumn *colptr;
+    char *cptr;
+    char message[FLEN_ERRMSG], keyname[FLEN_KEYWORD], dispfmt[FLEN_VALUE];
+    int tcode, hdutype, tstatus, scaled;
+    double tscale;
+
+    if (*status > 0)  /* inherit input status value if > 0 */
+        return(*status);
+
+    if (fptr->HDUposition != (fptr->Fptr)->curhdu)
+        ffmahd(fptr, (fptr->HDUposition) + 1, NULL, status);
+
+    if (colnum < 1 || colnum > (fptr->Fptr)->tfield)
+    {
+        snprintf(message, FLEN_ERRMSG,"Specified column number is out of range: %d",
+                colnum);
+        ffpmsg(message);
+        return(*status = BAD_COL_NUM);
+    }
+
+    colptr  = (fptr->Fptr)->tableptr;   /* point to first column */
+    colptr += (colnum - 1);     /* offset to correct column structure */
+    tcode = abs(colptr->tdatatype);
+
+    /* use the TDISPn keyword if it exists */
+    ffgtdw(fptr, colnum, width, status);
 
     if (*width == 0)
     {
@@ -762,9 +785,32 @@ int ffgcdw( fitsfile *fptr,   /* I - FITS file pointer                       */
                   {
                      if (colptr->tdatatype < 0)
                      {
-                        /* This is a variable-length string.  
-                          TFORM will have format such as "1P(<width>)", and not rAw */
-                        *width = colptr->twidth;
+                        /* This is a variable-length string.  The length of  */
+                        /* the string in each row is given by its heap       */
+                        /* descriptor, so report the longest string in the   */
+                        /* column (the same scan that ffuptf makes when it   */
+                        /* rewrites TFORMn as '1PA(len)' on closing the HDU).*/
+                        /* A buffer of this width then holds every row that  */
+                        /* ffgcls2 can return.  If the descriptors cannot be */
+                        /* read, fall back to the maximum length in TFORMn.  */
+                        LONGLONG nrows, jj, length, addr, maxlen = 0;
+                        long formwidth = colptr->twidth;
+                        int dstatus = 0;
+
+                        nrows = (fptr->Fptr)->numrows;
+                        for (jj = 1; jj <= nrows; jj++)
+                        {
+                            if (ffgdesll(fptr, colnum, jj, &length, &addr,
+                                         &dstatus) > 0)
+                                break;
+                            if (length > maxlen)
+                                maxlen = length;
+                        }
+
+                        if (dstatus == 0 && maxlen > 0 && maxlen <= INT_MAX)
+                            *width = (int) maxlen;
+                        else
+                            *width = (int) formwidth;
                      }
                      else
                      {
@@ -772,8 +818,9 @@ int ffgcdw( fitsfile *fptr,   /* I - FITS file pointer                       */
 		        long int repeat = 0, rwidth = 0;
 		        int gstatus = 0;
 
-		        /* Deal with possible vector string with repeat / width  by parsing
-		           the TFORM=rAw keyword */
+		        /* Use the width of the (unit) string from the column structure,
+		           which supports the TFORM=rAw vector string syntax, rather than
+		           parsing the TFORMn card found in the header */
 		        if (ffgtcl(fptr, colnum, &typecode, &repeat, &rwidth, &gstatus) == 0 &&
 			    rwidth >= 1) {
 		          *width = rwidth;
@@ -817,7 +864,7 @@ int ffgcls2 ( fitsfile *fptr,   /* I - FITS file pointer                       *
 {
     double dtemp;
     long nullen; 
-    int tcode, maxelem, hdutype, nulcheck, trailing, dwidth=0;
+    int tcode, maxelem, hdutype, nulcheck, trailing, dwidth=0, varlen = 0;
     long twidth, incre;
     long ii, jj, ntodo;
     LONGLONG repeat, startpos, elemnum, readptr, tnull, rowlen, rownum, remain, next;
@@ -859,6 +906,8 @@ int ffgcls2 ( fitsfile *fptr,   /* I - FITS file pointer                       *
 
     if (tcode == -TSTRING) /* variable length column in a binary table? */
     {
+      varlen = 1;
+
       /* only read a single string; ignore value of firstelem */
 
       if (ffgcprll( fptr, colnum, firstrow, 1, 1, 0, &scale, &zero,
@@ -890,8 +939,21 @@ int ffgcls2 ( fitsfile *fptr,   /* I - FITS file pointer                       *
     else
         return(*status = NOT_ASCII_COL);
     
-    /* If TDISP keyword exists, dwidth may be different than twidth */    
-    ffgcdw(fptr, colnum, &dwidth, status);
+    /* If TDISP keyword exists, dwidth may be different than twidth */
+    if (varlen)
+    {
+        /* Variable length string: twidth is the length of this row's     */
+        /* string, from its heap descriptor, so limit the returned string */
+        /* only to the display width if a TDISPn keyword exists.  (ffgcdw */
+        /* is not used here because it would scan every row's descriptor  */
+        /* on each call.)                                                 */
+        ffgtdw(fptr, colnum, &dwidth, status);
+        if (dwidth == 0)
+            dwidth = (int) twidth;
+    }
+    else
+        ffgcdw(fptr, colnum, &dwidth, status);
+
     if (dwidth > twidth)
        dwidth = twidth;
 
