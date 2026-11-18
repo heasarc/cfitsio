@@ -809,6 +809,14 @@ int ffgcdw( fitsfile *fptr,   /* I - FITS file pointer                       */
 
                         if (dstatus == 0 && maxlen > 0 && maxlen <= INT_MAX)
                             *width = (int) maxlen;
+                        else if (formwidth > INT_MAX) 
+                        {
+                           snprintf(message, FLEN_ERRMSG,"Bad TFORM value detected for col %d",
+                                   colnum);
+                           ffpmsg(message);
+                           return(*status = BAD_TFORM);
+                           
+                        }
                         else
                             *width = (int) formwidth;
                      }
