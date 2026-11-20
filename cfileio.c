@@ -3455,15 +3455,15 @@ int fits_copy_image_section(
     /* get the size of the input image */
     fits_get_img_type(fptr, &bitpix, status);
     fits_get_img_dim(fptr, &naxis, status);
-    if (fits_get_img_size(fptr, naxis, naxes, status) > 0)
-        return(*status);
-
     if (naxis < 1 || naxis > 4)
     {
         ffpmsg(
         "Input image either had NAXIS = 0 (NULL image) or has > 4 dimensions");
         return(*status = BAD_NAXIS);
     }
+
+    if (fits_get_img_size(fptr, naxis, naxes, status) > 0)
+        return(*status);
 
     /* create output image with same size and type as the input image */
     /*  Will update the size later */
