@@ -16,6 +16,18 @@
     gcc or cc command line.
 */
 
+/*
+    Storage class for file-scope state that must be separate in each thread,
+    so that the code using it is reentrant without holding Fitsio_Lock.
+*/
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && !defined(__STDC_NO_THREADS__)
+#define FF_THREAD_LOCAL _Thread_local
+#elif defined(_MSC_VER)
+#define FF_THREAD_LOCAL __declspec(thread)
+#else
+#define FF_THREAD_LOCAL __thread
+#endif
+
 #ifdef _REENTRANT
 #include <pthread.h>
 /*  #include <assert.h>  not needed any more */
