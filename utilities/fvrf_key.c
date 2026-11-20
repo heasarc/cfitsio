@@ -315,7 +315,7 @@ void get_cmp(char **pt,     		/* card string */
     char **pp;
     char *pr_beg;			/* end of real part */
     char *pr_end=0;			/* end of real part */
-    char *pi_beg;			/* beginning of the imaginay part */
+    char *pi_beg=0;			/* beginning of the imaginary part */
     char *pi_end=0;			/* end of real part */
     int  nchar;
     int set_comm = 0;
@@ -368,7 +368,8 @@ void get_cmp(char **pt,     		/* card string */
     while(isspace((int)*p)&& *p != '\0')  p++; 
     *pt = *pt + (p - card); 
 
-    /* analyse the real and imagine part */ 
+    /* analyze the real and imaginary part */
+    if(!set_comm) return;	/* no comma: nothing to split, NO_COMMA is set */
     *pr_end = '\0';
     *pi_end = '\0'; 
     while(isspace((int)*pr_beg) && *pr_beg != '\0')  pr_beg++; 
